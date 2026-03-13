@@ -68,6 +68,4 @@ The current leaderboard itself is loaded from a block-pinned snapshot so all on-
 - Export selected wallet simulation as image
 - Historical snapshots by block or date
 
-## License
 
-Private/internal unless you choose to publish under a license.

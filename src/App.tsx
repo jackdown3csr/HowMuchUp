@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import type { EnrichedUser, PoolData, StatsData, SimulationResult } from "./types";
 import { fetchAllLeaderboard, fetchUsersInBatches, fetchStats, fetchPool } from "./api";
 import { readLockDataBatch, readMaxTime, readGubiTotalSupply, getCurrentBlock } from "./chain";
@@ -246,14 +246,19 @@ function App() {
     }
   }, [simAddress, users]);
 
-  // Run simulation
+  // Run simulation — debounced 150ms so slider drags don't block the UI
+  const simTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => {
     if (!simAddress || users.length === 0) { setSimResult(null); return; }
     const user = users.find(
       (u) => u.address.toLowerCase() === simAddress.toLowerCase(),
     );
     if (!user) { setSimResult(null); return; }
-    setSimResult(simulate(user, users, additionalGNET, extensionDays, extraSoul));
+    clearTimeout(simTimerRef.current);
+    simTimerRef.current = setTimeout(() => {
+      setSimResult(simulate(user, users, additionalGNET, extensionDays, extraSoul));
+    }, 150);
+    return () => clearTimeout(simTimerRef.current);
   }, [simAddress, additionalGNET, extensionDays, extraSoul, users]);
 
   const poolProjection = computePoolProjection(pool, gubiSupply);
@@ -280,7 +285,7 @@ function App() {
 
   // Leaderboard with simulation applied: replace selected user's rep, re-sort
   const now = Math.floor(Date.now() / 1000);
-  const displayUsers = (() => {
+  const displayUsers = useMemo(() => {
     if (!simResult || !simAddress) return users;
     const simAddrLow = simAddress.toLowerCase();
     const withSim = users.map((u) =>
@@ -290,11 +295,11 @@ function App() {
     );
     withSim.sort((a, b) => b.reputation - a.reputation);
     return withSim.map((u, i) => ({ ...u, rank: i + 1 }));
-  })();
+  }, [simResult, simAddress, users]);
 
   const TOP_N = 12;
   type LbItem = { type: "user"; u: EnrichedUser } | { type: "gap" };
-  const visibleItems: LbItem[] = (() => {
+  const visibleItems = useMemo<LbItem[]>(() => {
     if (showAllUsers || displayUsers.length <= TOP_N) return displayUsers.map((u) => ({ type: "user" as const, u }));
     const top = displayUsers.slice(0, TOP_N);
     const selIdx = simAddress
@@ -306,7 +311,7 @@ function App() {
       { type: "gap" as const },
       { type: "user" as const, u: displayUsers[selIdx] },
     ];
-  })();
+  }, [displayUsers, simAddress, showAllUsers]);
 
   // Auto-scroll leaderboard to the selected row when selection changes (desktop only)
   const selectedRowRef = useRef<HTMLTableRowElement>(null);
@@ -429,11 +434,11 @@ function App() {
             return (
               <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
                 {([
-                  { lbl: "+GNET lock",  val: additionalGNET, set: setAdditionalGNET, min: 0, max: 200000,      step: 500, rangeStep: 50,  hint: undefined, showMax: false },
-                  { lbl: "+Lock days",  val: extensionDays,  set: setExtensionDays,  min: 0, max: maxExtension, step: 1,   rangeStep: 1,   hint: lockHint,  showMax: true },
-                  { lbl: "+SoulScore",  val: extraSoul,      set: setExtraSoul,      min: 0, max: 5000,         step: 10,  rangeStep: 1,   hint: undefined, showMax: false },
-                ] as { lbl: string; val: number; set: (v: number) => void; min: number; max: number; step: number; rangeStep: number; hint?: string; showMax: boolean }[]).map(
-                  ({ lbl, val, set, min, max, step, rangeStep, hint, showMax }) => (
+                  { lbl: "+GNET lock",  val: additionalGNET, set: setAdditionalGNET, min: 0, max: 100000,      numMax: Infinity,    step: 500, rangeStep: 50,  hint: undefined, showMax: false },
+                  { lbl: "+Lock days",  val: extensionDays,  set: setExtensionDays,  min: 0, max: maxExtension, numMax: maxExtension, step: 1,   rangeStep: 1,   hint: lockHint,  showMax: true },
+                  { lbl: "+SoulScore",  val: extraSoul,      set: setExtraSoul,      min: 0, max: 5000,         numMax: 5000,        step: 10,  rangeStep: 1,   hint: undefined, showMax: false },
+                ] as { lbl: string; val: number; set: (v: number) => void; min: number; max: number; numMax: number; step: number; rangeStep: number; hint?: string; showMax: boolean }[]).map(
+                  ({ lbl, val, set, min, max, numMax, step, rangeStep, hint, showMax }) => (
                     <div key={lbl} className="slider-row">
                       <span className="slider-label" style={{ color: C.muted, fontSize: 11, letterSpacing: "0.05em" }}>{lbl}</span>
                       <input
@@ -444,8 +449,8 @@ function App() {
                         disabled={max === 0}
                       />
                       <input
-                        type="number" min={min} max={max} step={step} value={val}
-                        onChange={(e) => set(Math.max(min, Math.min(max, Number(e.target.value) || 0)))}
+                        type="number" min={min} max={numMax === Infinity ? undefined : numMax} step={step} value={val}
+                        onChange={(e) => set(Math.max(min, numMax === Infinity ? (Number(e.target.value) || 0) : Math.min(numMax, Number(e.target.value) || 0)))}
                         className="slider-number"
                         style={{ ...inputStyle, textAlign: "right" }}
                         disabled={max === 0}

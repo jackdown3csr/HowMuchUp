@@ -19,7 +19,11 @@ input[type="number"] {
 }
 
 /* ── Root padding ── */
-.app-root { padding: 12px 20px; }
+.app-root {
+  padding: 12px 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
 
 /* ── Header ── */
 .header-title { font-size: 18px; }

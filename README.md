@@ -55,41 +55,6 @@ For simulated values:
 
 The current leaderboard itself is loaded from a block-pinned snapshot so all on-chain reads line up.
 
-## Local Development
-
-Requirements:
-
-- Node.js 20+
-- npm
-
-Install and run:
-
-```bash
-npm install
-npm run dev
-```
-
-Build:
-
-```bash
-npm run build
-```
-
-Type-check:
-
-```bash
-npx tsc --noEmit
-```
-
-## Main Files
-
-- `src/App.tsx` UI, loading flow, simulator, leaderboard, modal
-- `src/simulation.ts` simulation math
-- `src/chain.ts` block-pinned on-chain reads
-- `src/api.ts` REST API integration
-- `src/utils.ts` formatting and reputation helpers
-- `src/constants.ts` chain config, contracts, schedules
-
 ## Notes
 
 - The app is designed for exploration, not execution.

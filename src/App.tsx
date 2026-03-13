@@ -388,15 +388,15 @@ function App() {
         <div style={card}>
           <div style={{ color: C.accent, marginBottom: 8, fontWeight: "bold" }}>Simulator</div>
           {/* Address selection row */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 16px", marginBottom: 12, alignItems: "center" }}>
-            <label style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
+            <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
               {label("address")}
-              <input style={{ ...inputStyle, width: "100%", maxWidth: 340 }} type="text" value={simAddress}
+              <input style={{ ...inputStyle, flex: 1, minWidth: 0 }} type="text" value={simAddress}
                 onChange={(e) => setSimAddress(e.target.value)} placeholder="0x..." />
             </label>
-            <label style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
               {label("or pick")}
-              <select style={{ ...inputStyle }} value={simAddress} onChange={(e) => setSimAddress(e.target.value)}>
+              <select style={{ ...inputStyle, flex: 1, minWidth: 0 }} value={simAddress} onChange={(e) => setSimAddress(e.target.value)}>
                 <option value="">— select —</option>
                 {users.map((u) => (
                   <option key={u.address} value={u.address}>
@@ -454,7 +454,7 @@ function App() {
           )}
 
           {simResult && (
-            <table style={{ borderCollapse: "collapse" }}>
+            <table style={{ borderCollapse: "collapse", width: "100%", marginTop: 10 }}>
               <thead>
                 <tr>
                   <th style={th}>Metric</th>

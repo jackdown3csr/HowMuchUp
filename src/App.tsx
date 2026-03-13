@@ -115,6 +115,7 @@ function App() {
   const [extraSoul, setExtraSoul] = useState(0);
   const [simResult, setSimResult] = useState<SimulationResult | null>(null);
   const [showPool, setShowPool] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [showStats, setShowStats] = useState(true);
   const [showAllUsers, setShowAllUsers] = useState(false);
 
@@ -268,6 +269,15 @@ function App() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [showPool]);
 
+  useEffect(() => {
+    if (!showHelp) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowHelp(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [showHelp]);
+
   // Leaderboard with simulation applied: replace selected user's rep, re-sort
   const now = Math.floor(Date.now() / 1000);
   const displayUsers = (() => {
@@ -329,6 +339,9 @@ function App() {
           </button>
           <button style={{ ...btnStyle, fontSize: 12, padding: "3px 10px", borderColor: C.borderAccent, color: C.textDim }} onClick={() => setShowPool(v => !v)} title="Open projected pool backing in a modal">
             {showPool ? "Close Pool" : "Pool Projection ↗"}
+          </button>
+          <button style={{ ...btnStyle, fontSize: 12, padding: "3px 9px", borderColor: C.borderAccent, color: C.textDim }} onClick={() => setShowHelp(v => !v)} title="How does this work?">
+            ?
           </button>
           {walletError && <span style={{ color: C.red, fontSize: 12 }}>{walletError}</span>}
           {!isMetaMaskInstalled() ? (
@@ -416,15 +429,15 @@ function App() {
             return (
               <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
                 {([
-                  { lbl: "+GNET lock",  val: additionalGNET, set: setAdditionalGNET, min: 0, max: 200000,      step: 500, hint: undefined, showMax: false },
-                  { lbl: "+Lock days",  val: extensionDays,  set: setExtensionDays,  min: 0, max: maxExtension, step: 1,   hint: lockHint,  showMax: true },
-                  { lbl: "+SoulScore",  val: extraSoul,      set: setExtraSoul,      min: 0, max: 5000,         step: 10,  hint: undefined, showMax: false },
-                ] as { lbl: string; val: number; set: (v: number) => void; min: number; max: number; step: number; hint?: string; showMax: boolean }[]).map(
-                  ({ lbl, val, set, min, max, step, hint, showMax }) => (
+                  { lbl: "+GNET lock",  val: additionalGNET, set: setAdditionalGNET, min: 0, max: 200000,      step: 500, rangeStep: 50,  hint: undefined, showMax: false },
+                  { lbl: "+Lock days",  val: extensionDays,  set: setExtensionDays,  min: 0, max: maxExtension, step: 1,   rangeStep: 1,   hint: lockHint,  showMax: true },
+                  { lbl: "+SoulScore",  val: extraSoul,      set: setExtraSoul,      min: 0, max: 5000,         step: 10,  rangeStep: 1,   hint: undefined, showMax: false },
+                ] as { lbl: string; val: number; set: (v: number) => void; min: number; max: number; step: number; rangeStep: number; hint?: string; showMax: boolean }[]).map(
+                  ({ lbl, val, set, min, max, step, rangeStep, hint, showMax }) => (
                     <div key={lbl} className="slider-row">
                       <span className="slider-label" style={{ color: C.muted, fontSize: 11, letterSpacing: "0.05em" }}>{lbl}</span>
                       <input
-                        type="range" min={min} max={max || 1} step={step} value={Math.min(val, max || 1)}
+                        type="range" min={min} max={max || 1} step={rangeStep} value={Math.min(val, max || 1)}
                         onChange={(e) => set(Number(e.target.value))}
                         className="slider-track"
                         style={{ accentColor: C.accent, cursor: max === 0 ? "not-allowed" : "pointer", height: 4, opacity: max === 0 ? 0.35 : 1 }}
@@ -619,6 +632,53 @@ function App() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Help Modal */}
+      {showHelp && (
+        <div className="modal-backdrop" onClick={() => setShowHelp(false)}>
+          <div className="modal-card" style={{ maxWidth: 600 }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+              <div style={{ color: C.accent, fontWeight: "bold", fontSize: 14 }}>How it works</div>
+              <button style={{ ...btnStyle, padding: "3px 10px", fontSize: 12 }} onClick={() => setShowHelp(false)}>Close</button>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 16, color: C.text, fontSize: 12, lineHeight: 1.6 }}>
+
+              <section>
+                <div style={{ color: C.textBright, fontWeight: "bold", marginBottom: 4 }}>veGNET — voting-escrowed GNET</div>
+                <div style={{ color: C.textDim }}>veGNET = lockedGNET × (daysLeft / 730)</div>
+                <div style={{ marginTop: 4 }}>Lock up to 730 days. The longer the lock, the more veGNET you get. veGNET decays linearly every day as your lock approaches expiry.</div>
+              </section>
+
+              <section>
+                <div style={{ color: C.textBright, fontWeight: "bold", marginBottom: 4 }}>Reputation</div>
+                <div style={{ color: C.textDim }}>reputation = SoulScore × log₁₀(veGNET)</div>
+                <div style={{ marginTop: 4 }}>SoulScore comes from your on-chain ZK-KYC and credential proofs — it cannot be bought. veGNET brings the economic weight. The logarithm prevents pure capital from dominating.</div>
+              </section>
+
+              <section>
+                <div style={{ color: C.textBright, fontWeight: "bold", marginBottom: 4 }}>Monthly gUBI reward</div>
+                <div style={{ color: C.textDim }}>reward = (yourReputation / totalReputation) × 5,000,000 gUBI</div>
+                <div style={{ marginTop: 4 }}>5,000,000 gUBI is emitted every month, split pro-rata across all participants by reputation. Your share grows as your reputation grows — or shrinks as others grow.</div>
+              </section>
+
+              <section>
+                <div style={{ color: C.textBright, fontWeight: "bold", marginBottom: 4 }}>Simulator sliders</div>
+                <div style={{ marginTop: 0 }}>
+                  <span style={{ color: C.textDim }}>+GNET lock</span> — adds GNET to your locked position, increasing veGNET and thus reputation.<br />
+                  <span style={{ color: C.textDim }}>+Lock days</span> — extends your lock duration (capped at 730 days total). Uses MAX to fill to the cap.<br />
+                  <span style={{ color: C.textDim }}>+SoulScore</span> — hypothetical future credential gains. Real SoulScore can only increase on-chain.
+                </div>
+              </section>
+
+              <section>
+                <div style={{ color: C.textBright, fontWeight: "bold", marginBottom: 4 }}>Data sources</div>
+                <div>Leaderboard and user stats: Galactica Admin API. Lock data (lockedGNET, lockEnd, veGNET) and gUBI supply: on-chain at block snapshot. All data refreshes on every page load or manual ↺ Refresh.</div>
+              </section>
+
             </div>
           </div>
         </div>

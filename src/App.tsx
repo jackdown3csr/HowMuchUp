@@ -6,6 +6,8 @@ import { shortAddr, formatNumber, formatDate, calcReputation } from "./utils";
 import { MONTHLY_EMISSION, INFLOW_SCHEDULE } from "./constants";
 import { simulate } from "./simulation";
 import { isMetaMaskInstalled, connectMetaMask } from "./wallet";
+import { translations } from "./i18n";
+import type { Lang } from "./i18n";
 
 // --- Dark theme palette ---
 const C = {
@@ -118,13 +120,17 @@ function App() {
   const [showHelp, setShowHelp] = useState(false);
   const [showStats, setShowStats] = useState(true);
   const [showAllUsers, setShowAllUsers] = useState(false);
+  const [lang, setLang] = useState<Lang>("en");
+  const langRef = useRef<Lang>("en");
+  langRef.current = lang;
+  const T = translations[lang];
 
   // --- Load all data ---
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
-      setLoadProgress("Fetching leaderboard...");
+      setLoadProgress(translations[langRef.current].loadFetchingLeaderboard);
 
       const [lbItems, statsData, poolData] = await Promise.all([
         fetchAllLeaderboard(),
@@ -135,10 +141,10 @@ function App() {
       setPool(poolData);
 
       const addresses = lbItems.map((i) => i.address);
-      setLoadProgress(`Loaded ${addresses.length} users. Fetching user details...`);
+      setLoadProgress(translations[langRef.current].loadFetchingUserDetails(addresses.length));
 
       const userDataMap = await fetchUsersInBatches(addresses, 10);
-      setLoadProgress("Fetching on-chain lock data...");
+      setLoadProgress(translations[langRef.current].loadFetchingLockData);
 
       const [, supply, blockNum] = await Promise.all([
         readMaxTime(),
@@ -150,7 +156,7 @@ function App() {
       setSnapshotTs(Math.floor(Date.now() / 1000));
 
       // Fetch all lock data pinned to this block for consistency
-      setLoadProgress(`Fetching on-chain lock data at block ${blockNum}...`);
+      setLoadProgress(translations[langRef.current].loadFetchingLockDataBlock(blockNum));
       const pinnedLockDataMap = await readLockDataBatch(addresses, 10, blockNum);
 
       // Enrich
@@ -326,7 +332,7 @@ function App() {
     if (lockEnd <= 0) return "—";
     const date = formatDate(lockEnd);
     const daysLeft = lockEnd > now ? Math.floor((lockEnd - now) / 86400) : 0;
-    return daysLeft > 0 ? `${date} (${daysLeft}d)` : `${date} (expired)`;
+    return daysLeft > 0 ? `${date} (${daysLeft}d)` : `${date} (${T.lockExpired})`;
   };
 
   return (
@@ -336,25 +342,28 @@ function App() {
       <div className="site-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, borderBottom: `1px solid ${C.border}`, paddingBottom: 8 }}>
         <div className="header-brand">
           <div className="header-title" style={{ fontWeight: "bold", color: C.accent, letterSpacing: "0.06em" }}>HowMuchUp</div>
-          <div style={{ color: C.textDim, fontSize: 11, marginTop: 2 }}>gUBI rank and reward simulator</div>
+          <div style={{ color: C.textDim, fontSize: 11, marginTop: 2 }}>{T.subtitle}</div>
         </div>
         <div className="header-actions" style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
-          <button style={{ ...btnStyle, fontSize: 12, padding: "3px 10px" }} onClick={() => loadData()} disabled={loading} title="Re-fetch all data from chain and API">
-            ↺ Refresh
+          <button style={{ ...btnStyle, fontSize: 12, padding: "3px 10px" }} onClick={() => loadData()} disabled={loading} title={T.titleRefresh}>
+            {T.btnRefresh}
           </button>
-          <button style={{ ...btnStyle, fontSize: 12, padding: "3px 10px", borderColor: C.borderAccent, color: C.textDim }} onClick={() => setShowPool(v => !v)} title="Open projected pool backing in a modal">
-            {showPool ? "Close Pool" : "Pool Projection ↗"}
+          <button style={{ ...btnStyle, fontSize: 12, padding: "3px 10px", borderColor: C.borderAccent, color: C.textDim }} onClick={() => setShowPool(v => !v)} title={T.titlePool}>
+            {showPool ? T.btnClosePool : T.btnPoolProjection}
           </button>
-          <button style={{ ...btnStyle, fontSize: 12, padding: "3px 9px", borderColor: C.borderAccent, color: C.textDim }} onClick={() => setShowHelp(v => !v)} title="How does this work?">
+          <button style={{ ...btnStyle, fontSize: 12, padding: "3px 9px", borderColor: C.borderAccent, color: C.textDim }} onClick={() => setShowHelp(v => !v)} title={T.titleHelp}>
             ?
+          </button>
+          <button style={{ ...btnStyle, fontSize: 12, padding: "3px 10px", borderColor: C.borderAccent, color: C.textDim }} onClick={() => setLang(l => l === "en" ? "fr" : "en")} title="Switch language / Changer de langue">
+            {lang === "en" ? "FR" : "EN"}
           </button>
           {walletError && <span style={{ color: C.red, fontSize: 12 }}>{walletError}</span>}
           {!isMetaMaskInstalled() ? (
-            <span style={{ color: C.textDim }}>No MetaMask</span>
+            <span style={{ color: C.textDim }}>{T.noMetaMask}</span>
           ) : walletAddr ? (
             <span style={{ color: C.green }}>● {shortAddr(walletAddr)}</span>
           ) : (
-            <button style={btnStyle} onClick={handleConnect}>Connect MetaMask</button>
+            <button style={btnStyle} onClick={handleConnect}>{T.btnConnectMetaMask}</button>
           )}
         </div>
       </div>
@@ -365,35 +374,35 @@ function App() {
           <div style={{ height: 2, background: C.border, borderRadius: 2, marginBottom: 6, overflow: "hidden" }}>
             <div style={{ height: "100%", background: C.accent, borderRadius: 2, width: "100%", animation: "pulse-bar 1.4s ease-in-out infinite", transformOrigin: "left" }} />
           </div>
-          <div style={{ color: C.textDim, fontSize: 12 }}>⏳ {loadProgress || "Loading..."}</div>
+          <div style={{ color: C.textDim, fontSize: 12 }}>⏳ {loadProgress || T.loadingDefault}</div>
         </div>
       )}
-      {error && <div style={{ color: C.red, marginBottom: 8 }}>Error: {error}</div>}
+      {error && <div style={{ color: C.red, marginBottom: 8 }}>{T.errorPrefix} {error}</div>}
 
       {/* Stats */}
       {stats && pool && (
         <div style={card}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-            <div style={{ color: C.accent, fontWeight: "bold" }}>Stats</div>
+            <div style={{ color: C.accent, fontWeight: "bold" }}>{T.statsTitle}</div>
             <button
               style={{ ...btnStyle, fontSize: 11, padding: "2px 8px", borderColor: C.borderAccent, color: C.textDim }}
               onClick={() => setShowStats((v) => !v)}
-              title={showStats ? "Collapse stats" : "Expand stats"}
+              title={showStats ? T.titleHideStats : T.titleShowStats}
             >
-              {showStats ? "Hide" : "Show"}
+              {showStats ? T.btnHide : T.btnShow}
             </button>
           </div>
           {showStats && (
             <div className="stats-grid" style={{ marginTop: 10 }}>
-              <span>{label("users")} <b style={{ color: C.textBright }}>{stats.totalUsers}</b></span>
-              <span>{label("total rep")} <b style={{ color: C.textBright }}>{formatNumber(stats.totalReputation, 0)}</b></span>
-              <span>{label("emission")} <b style={{ color: C.textBright }}>{formatNumber(MONTHLY_EMISSION, 0)}</b> gUBI/mo</span>
-              <span>{label("pool")} <b style={{ color: C.textBright }}>${formatNumber(pool.totalWorthUSD)}</b></span>
-              <span>{label("gUBI price")} <b style={{ color: C.textBright }}>${formatNumber(pool.gubiPrice, 6)}</b></span>
-              <span>{label("gUBI supply")} <b style={{ color: C.textBright }}>{formatNumber(gubiSupply, 0)}</b></span>
-              <span>{label("backing/gUBI")} <b style={{ color: C.textBright }}>${gubiSupply > 0 ? formatNumber(pool.totalWorthUSD / gubiSupply, 6) : "—"}</b></span>
-              {snapshotBlock > 0 && <span>{label("block")} <b style={{ color: C.textBright }}>{snapshotBlock}</b></span>}
-              {snapshotTs > 0 && <span>{label("snapshot")} {new Date(snapshotTs * 1000).toISOString().replace("T", " ").slice(0, 19)} UTC</span>}
+              <span>{label(T.statUsers)} <b style={{ color: C.textBright }}>{stats.totalUsers}</b></span>
+              <span>{label(T.statTotalRep)} <b style={{ color: C.textBright }}>{formatNumber(stats.totalReputation, 0)}</b></span>
+              <span>{label(T.statEmission)} <b style={{ color: C.textBright }}>{formatNumber(MONTHLY_EMISSION, 0)}</b> {T.gubiPerMonth}</span>
+              <span>{label(T.statPool)} <b style={{ color: C.textBright }}>${formatNumber(pool.totalWorthUSD)}</b></span>
+              <span>{label(T.statGubiPrice)} <b style={{ color: C.textBright }}>${formatNumber(pool.gubiPrice, 6)}</b></span>
+              <span>{label(T.statGubiSupply)} <b style={{ color: C.textBright }}>{formatNumber(gubiSupply, 0)}</b></span>
+              <span>{label(T.statBacking)} <b style={{ color: C.textBright }}>${gubiSupply > 0 ? formatNumber(pool.totalWorthUSD / gubiSupply, 6) : "—"}</b></span>
+              {snapshotBlock > 0 && <span>{label(T.statBlock)} <b style={{ color: C.textBright }}>{snapshotBlock}</b></span>}
+              {snapshotTs > 0 && <span>{label(T.statSnapshot)} {new Date(snapshotTs * 1000).toISOString().replace("T", " ").slice(0, 19)} UTC</span>}
             </div>
           )}
         </div>
@@ -404,18 +413,18 @@ function App() {
         <div className="main-layout">
         <div className="sim-col">
         <div style={card}>
-          <div style={{ color: C.accent, marginBottom: 8, fontWeight: "bold" }}>Simulator</div>
+          <div style={{ color: C.accent, marginBottom: 8, fontWeight: "bold" }}>{T.simTitle}</div>
           {/* Address selection row */}
           <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
             <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              {label("address")}
+              {label(T.lblAddress)}
               <input style={{ ...inputStyle, flex: 1, minWidth: 0 }} type="text" value={simAddress}
-                onChange={(e) => setSimAddress(e.target.value)} placeholder="0x..." />
+                onChange={(e) => setSimAddress(e.target.value)} placeholder={T.placeholderAddress} />
             </label>
             <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              {label("or pick")}
+              {label(T.lblOrPick)}
               <select style={{ ...inputStyle, flex: 1, minWidth: 0 }} value={simAddress} onChange={(e) => setSimAddress(e.target.value)}>
-                <option value="">— select —</option>
+                <option value="">{T.placeholderSelect}</option>
                 {users.map((u) => (
                   <option key={u.address} value={u.address}>
                     #{u.rank} {shortAddr(u.address)} · {formatNumber(u.reputation, 0)} rep
@@ -434,9 +443,9 @@ function App() {
             return (
               <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
                 {([
-                  { lbl: "+GNET lock",  val: additionalGNET, set: setAdditionalGNET, min: 0, max: 100000,      numMax: Infinity,    step: 500, rangeStep: 50,  hint: undefined, showMax: false },
-                  { lbl: "+Lock days",  val: extensionDays,  set: setExtensionDays,  min: 0, max: maxExtension, numMax: maxExtension, step: 1,   rangeStep: 1,   hint: lockHint,  showMax: true },
-                  { lbl: "+SoulScore",  val: extraSoul,      set: setExtraSoul,      min: 0, max: 5000,         numMax: 5000,        step: 10,  rangeStep: 1,   hint: undefined, showMax: false },
+                  { lbl: T.sliderGNET,  val: additionalGNET, set: setAdditionalGNET, min: 0, max: 100000,      numMax: Infinity,    step: 500, rangeStep: 50,  hint: undefined, showMax: false },
+                  { lbl: T.sliderDays,  val: extensionDays,  set: setExtensionDays,  min: 0, max: maxExtension, numMax: maxExtension, step: 1,   rangeStep: 1,   hint: lockHint,  showMax: true },
+                  { lbl: T.sliderSoul,  val: extraSoul,      set: setExtraSoul,      min: 0, max: 5000,         numMax: 5000,        step: 10,  rangeStep: 1,   hint: undefined, showMax: false },
                 ] as { lbl: string; val: number; set: (v: number) => void; min: number; max: number; numMax: number; step: number; rangeStep: number; hint?: string; showMax: boolean }[]).map(
                   ({ lbl, val, set, min, max, numMax, step, rangeStep, hint, showMax }) => (
                     <div key={lbl} className="slider-row">
@@ -457,7 +466,7 @@ function App() {
                       />
                       <span className="slider-hint" style={{ color: C.muted, fontSize: 10, whiteSpace: "nowrap" }}>{hint ?? ""}</span>
                       {showMax && max > 0 && val < max && (
-                        <button className="slider-max" onClick={() => set(max)} style={{ ...btnStyle, fontSize: 10, padding: "2px 7px", borderColor: C.borderAccent, color: C.textDim }}>MAX</button>
+                        <button className="slider-max" onClick={() => set(max)} style={{ ...btnStyle, fontSize: 10, padding: "2px 7px", borderColor: C.borderAccent, color: C.textDim }}>{T.btnMAX}</button>
                       )}
                       {(!showMax || max === 0 || val >= max) && <span className="slider-max-placeholder" />}
                     </div>
@@ -468,26 +477,26 @@ function App() {
           })()}
 
           {simAddress && !users.find((u) => u.address.toLowerCase() === simAddress.toLowerCase()) && (
-            <div style={{ color: C.orange, marginBottom: 6 }}>Address not found in leaderboard.</div>
+            <div style={{ color: C.orange, marginBottom: 6 }}>{T.addrNotFound}</div>
           )}
 
           {simResult && (
             <table style={{ borderCollapse: "collapse", width: "100%", marginTop: 10 }}>
               <thead>
                 <tr>
-                  <th style={th}>Metric</th>
-                  <th style={th}>Current</th>
-                  <th style={th}>Simulated</th>
-                  <th style={th}>Delta</th>
+                  <th style={th}>{T.colMetric}</th>
+                  <th style={th}>{T.colCurrent}</th>
+                  <th style={th}>{T.colSimulated}</th>
+                  <th style={th}>{T.colDelta}</th>
                 </tr>
               </thead>
               <tbody>
                 {([
-                  ["SoulScore",    simResult.currentSoulScore,    simResult.simSoulScore,    0],
-                  ["Locked GNET",  simResult.currentLockedGNET,  simResult.simLockedGNET,   2],
-                  ["Lock Days",    simResult.currentDaysLeft,    simResult.simDaysLeft,     0],
-                  ["veGNET",       simResult.currentVeGNET,      simResult.simVeGNET,       4],
-                  ["Reputation",   simResult.currentReputation,  simResult.simReputation,   2],
+                  [T.rowSoulScore,   simResult.currentSoulScore,    simResult.simSoulScore,    0],
+                  [T.rowLockedGNET,  simResult.currentLockedGNET,  simResult.simLockedGNET,   2],
+                  [T.rowLockDays,    simResult.currentDaysLeft,    simResult.simDaysLeft,     0],
+                  [T.rowVeGNET,      simResult.currentVeGNET,      simResult.simVeGNET,       4],
+                  [T.rowReputation,  simResult.currentReputation,  simResult.simReputation,   2],
                 ] as [string, number, number, number][]).map(([name, cur, sim, dec]) => (
                   <tr key={name}>
                     <td style={td}>{name}</td>
@@ -497,7 +506,7 @@ function App() {
                   </tr>
                 ))}
                 <tr style={{ borderTop: `2px solid ${C.borderAccent}` }}>
-                  <td style={{ ...td, fontWeight: "bold", color: C.textBright }}>Rank</td>
+                  <td style={{ ...td, fontWeight: "bold", color: C.textBright }}>{T.rowRank}</td>
                   <td style={{ ...tdRight, fontWeight: "bold" }}>#{simResult.currentRank}</td>
                   <td style={{ ...tdRight, fontWeight: "bold" }}>#{simResult.simRank}</td>
                   <td style={{ ...tdRight, fontWeight: "bold", color: deltaColor(simResult.deltaRank) }}>
@@ -505,7 +514,7 @@ function App() {
                   </td>
                 </tr>
                 <tr>
-                  <td style={{ ...td, fontWeight: "bold", color: C.textBright }}>Monthly gUBI</td>
+                  <td style={{ ...td, fontWeight: "bold", color: C.textBright }}>{T.rowMonthlyGubi}</td>
                   <td style={{ ...tdRight, fontWeight: "bold" }}>{formatNumber(simResult.currentMonthlyReward)}</td>
                   <td style={{ ...tdRight, fontWeight: "bold" }}>{formatNumber(simResult.simMonthlyReward)}</td>
                   <td style={{ ...tdRight, fontWeight: "bold", color: deltaColor(simResult.deltaReward) }}>
@@ -520,21 +529,21 @@ function App() {
         <div className="lb-col">
         <div style={{ ...card, padding: 0, overflow: "hidden" }}>
           <div style={{ padding: "8px 14px", borderBottom: `1px solid ${C.border}` }}>
-            <div style={{ color: C.accent, fontWeight: "bold" }}>Leaderboard <span style={{ color: C.textDim, fontWeight: "normal" }}>({users.length} users)</span></div>
-            {simResult && <div style={{ color: C.orange, fontSize: 11, fontWeight: "normal", marginTop: 2 }}>⚡ simulated ranking for {shortAddr(simAddress)}</div>}
+            <div style={{ color: C.accent, fontWeight: "bold" }}>{T.lbTitle} <span style={{ color: C.textDim, fontWeight: "normal" }}>({users.length} {T.statUsers})</span></div>
+            {simResult && <div style={{ color: C.orange, fontSize: 11, fontWeight: "normal", marginTop: 2 }}>{T.lbSimNotice} {shortAddr(simAddress)}</div>}
           </div>
           <div style={{ overflowX: "auto" }}>
             <table style={{ borderCollapse: "collapse", width: "100%" }}>
               <thead>
                 <tr>
-                  <th style={th}>#</th>
-                  <th style={th}>Address</th>
-                  <th style={th} className="col-hide-mobile">SoulScore</th>
-                  <th style={th} className="col-hide-mobile">Locked GNET</th>
-                  <th style={th} className="col-hide-mobile">veGNET</th>
-                  <th style={th}>Reputation</th>
-                  <th style={th}>Monthly gUBI</th>
-                  <th style={th} className="col-hide-mobile">Lock End</th>
+                  <th style={th}>{T.colHash}</th>
+                  <th style={th}>{T.colAddress}</th>
+                  <th style={th} className="col-hide-mobile">{T.colSoulScore}</th>
+                  <th style={th} className="col-hide-mobile">{T.colLockedGNET}</th>
+                  <th style={th} className="col-hide-mobile">{T.colVeGNET}</th>
+                  <th style={th}>{T.colReputation}</th>
+                  <th style={th}>{T.colMonthlyGubi}</th>
+                  <th style={th} className="col-hide-mobile">{T.colLockEnd}</th>
                 </tr>
               </thead>
               <tbody>
@@ -582,14 +591,14 @@ function App() {
               {simAddress && !showAllUsers && (() => {
                 const selIdx = displayUsers.findIndex((u) => u.address.toLowerCase() === simAddress.toLowerCase());
                 return selIdx >= TOP_N ? (
-                  <span style={{ color: C.textDim, fontSize: 11 }}>your simulated rank: #{displayUsers[selIdx].rank}</span>
+                  <span style={{ color: C.textDim, fontSize: 11 }}>{T.yourSimRank(displayUsers[selIdx].rank)}</span>
                 ) : null;
               })()}
               <button
                 style={{ ...btnStyle, fontSize: 11, padding: "3px 14px" }}
                 onClick={() => setShowAllUsers((v) => !v)}
               >
-                {showAllUsers ? "↑ Collapse" : `↓ Show all ${displayUsers.length} users`}
+                {showAllUsers ? T.btnCollapse : T.btnShowAll(displayUsers.length)}
               </button>
             </div>
           )}
@@ -604,26 +613,26 @@ function App() {
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
               <div>
-                <div style={{ color: C.accent, fontWeight: "bold", marginBottom: 4 }}>Pool Backing Projection</div>
+                <div style={{ color: C.accent, fontWeight: "bold", marginBottom: 4 }}>{T.poolTitle}</div>
                 <div style={{ color: C.text, fontSize: 12, marginBottom: 4 }}>
-                  Projected backing as scheduled GNET unlocks enter the pool over time.
+                  {T.poolDesc}
                 </div>
                 <div style={{ color: C.textDim, fontSize: 12 }}>
-                  Base: ${formatNumber(pool.totalWorthUSD)} pool · {formatNumber(gubiSupply, 0)} gUBI supply · ${gubiSupply > 0 ? formatNumber(pool.totalWorthUSD / gubiSupply, 6) : "—"} current backing
+                  {T.poolBase}: ${formatNumber(pool.totalWorthUSD)} pool · {formatNumber(gubiSupply, 0)} gUBI supply · ${gubiSupply > 0 ? formatNumber(pool.totalWorthUSD / gubiSupply, 6) : "—"} current backing
                 </div>
               </div>
               <button style={{ ...btnStyle, padding: "3px 10px", fontSize: 12 }} onClick={() => setShowPool(false)}>
-                Close
+                {T.btnClose}
               </button>
             </div>
             <div className="modal-table-wrap">
               <table style={{ borderCollapse: "collapse", width: "100%" }}>
                 <thead>
                   <tr>
-                    <th style={th}>Period</th>
-                    <th style={th}>GNET Inflow</th>
-                    <th style={th}>Cumulative GNET</th>
-                    <th style={th}>Projected Backing/gUBI</th>
+                    <th style={th}>{T.colPeriod}</th>
+                    <th style={th}>{T.colGNETInflow}</th>
+                    <th style={th}>{T.colCumulativeGNET}</th>
+                    <th style={th}>{T.colProjectedBacking}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -647,41 +656,41 @@ function App() {
         <div className="modal-backdrop" onClick={() => setShowHelp(false)}>
           <div className="modal-card" style={{ maxWidth: 600 }} onClick={(e) => e.stopPropagation()}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-              <div style={{ color: C.accent, fontWeight: "bold", fontSize: 14 }}>How it works</div>
-              <button style={{ ...btnStyle, padding: "3px 10px", fontSize: 12 }} onClick={() => setShowHelp(false)}>Close</button>
+              <div style={{ color: C.accent, fontWeight: "bold", fontSize: 14 }}>{T.helpTitle}</div>
+              <button style={{ ...btnStyle, padding: "3px 10px", fontSize: 12 }} onClick={() => setShowHelp(false)}>{T.btnClose}</button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 16, color: C.text, fontSize: 12, lineHeight: 1.6 }}>
 
               <section>
-                <div style={{ color: C.textBright, fontWeight: "bold", marginBottom: 4 }}>veGNET — voting-escrowed GNET</div>
-                <div style={{ color: C.textDim }}>veGNET = lockedGNET × (daysLeft / 730)</div>
-                <div style={{ marginTop: 4 }}>Lock up to 730 days. The longer the lock, the more veGNET you get. veGNET decays linearly every day as your lock approaches expiry.</div>
+                <div style={{ color: C.textBright, fontWeight: "bold", marginBottom: 4 }}>{T.helpVeGNETTitle}</div>
+                <div style={{ color: C.textDim }}>{T.helpVeGNETFormula}</div>
+                <div style={{ marginTop: 4 }}>{T.helpVeGNETBody}</div>
               </section>
 
               <section>
-                <div style={{ color: C.textBright, fontWeight: "bold", marginBottom: 4 }}>Reputation</div>
-                <div style={{ color: C.textDim }}>reputation = SoulScore × log₁₀(veGNET)</div>
-                <div style={{ marginTop: 4 }}>SoulScore comes from your on-chain ZK-KYC and credential proofs — it cannot be bought. veGNET brings the economic weight. The logarithm prevents pure capital from dominating.</div>
+                <div style={{ color: C.textBright, fontWeight: "bold", marginBottom: 4 }}>{T.helpRepTitle}</div>
+                <div style={{ color: C.textDim }}>{T.helpRepFormula}</div>
+                <div style={{ marginTop: 4 }}>{T.helpRepBody}</div>
               </section>
 
               <section>
-                <div style={{ color: C.textBright, fontWeight: "bold", marginBottom: 4 }}>Monthly gUBI reward</div>
-                <div style={{ color: C.textDim }}>reward = (yourReputation / totalReputation) × 5,000,000 gUBI</div>
-                <div style={{ marginTop: 4 }}>5,000,000 gUBI is emitted every month, split pro-rata across all participants by reputation. Your share grows as your reputation grows — or shrinks as others grow.</div>
+                <div style={{ color: C.textBright, fontWeight: "bold", marginBottom: 4 }}>{T.helpGubiTitle}</div>
+                <div style={{ color: C.textDim }}>{T.helpGubiFormula}</div>
+                <div style={{ marginTop: 4 }}>{T.helpGubiBody}</div>
               </section>
 
               <section>
-                <div style={{ color: C.textBright, fontWeight: "bold", marginBottom: 4 }}>Simulator sliders</div>
+                <div style={{ color: C.textBright, fontWeight: "bold", marginBottom: 4 }}>{T.helpSlidersTitle}</div>
                 <div style={{ marginTop: 0 }}>
-                  <span style={{ color: C.textDim }}>+GNET lock</span> — adds GNET to your locked position, increasing veGNET and thus reputation.<br />
-                  <span style={{ color: C.textDim }}>+Lock days</span> — extends your lock duration (capped at 730 days total). Uses MAX to fill to the cap.<br />
-                  <span style={{ color: C.textDim }}>+SoulScore</span> — hypothetical future credential gains. Real SoulScore can only increase on-chain.
+                  <span style={{ color: C.textDim }}>{T.sliderGNET}</span> {T.helpSliderGNETDesc}<br />
+                  <span style={{ color: C.textDim }}>{T.sliderDays}</span> {T.helpSliderDaysDesc}<br />
+                  <span style={{ color: C.textDim }}>{T.sliderSoul}</span> {T.helpSliderSoulDesc}
                 </div>
               </section>
 
               <section>
-                <div style={{ color: C.textBright, fontWeight: "bold", marginBottom: 4 }}>Data sources</div>
-                <div>Leaderboard and user stats: Galactica Admin API. Lock data (lockedGNET, lockEnd, veGNET) and gUBI supply: on-chain at block snapshot. All data refreshes on every page load or manual ↺ Refresh.</div>
+                <div style={{ color: C.textBright, fontWeight: "bold", marginBottom: 4 }}>{T.helpSourcesTitle}</div>
+                <div>{T.helpSourcesBody}</div>
               </section>
 
             </div>

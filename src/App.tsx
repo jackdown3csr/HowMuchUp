@@ -120,7 +120,11 @@ function App() {
   const [showHelp, setShowHelp] = useState(false);
   const [showStats, setShowStats] = useState(true);
   const [showAllUsers, setShowAllUsers] = useState(false);
-  const [lang, setLang] = useState<Lang>("en");
+  const [lang, setLang] = useState<Lang>(() => {
+    const saved = localStorage.getItem("lang") as Lang | null;
+    if (saved === "en" || saved === "fr") return saved;
+    return navigator.language.toLowerCase().startsWith("fr") ? "fr" : "en";
+  });
   const langRef = useRef<Lang>("en");
   langRef.current = lang;
   const T = translations[lang];
@@ -351,10 +355,10 @@ function App() {
           <button style={{ ...btnStyle, fontSize: 12, padding: "3px 10px", borderColor: C.borderAccent, color: C.textDim }} onClick={() => setShowPool(v => !v)} title={T.titlePool}>
             {showPool ? T.btnClosePool : T.btnPoolProjection}
           </button>
-          <button style={{ ...btnStyle, fontSize: 12, padding: "3px 9px", borderColor: C.borderAccent, color: C.textDim }} onClick={() => setShowHelp(v => !v)} title={T.titleHelp}>
-            ?
+          <button style={{ ...btnStyle, fontSize: 12, padding: "3px 10px", borderColor: showHelp ? C.accent : C.borderAccent, color: showHelp ? C.accent : C.textDim }} onClick={() => setShowHelp(v => !v)} title={T.titleHelp}>
+            {T.btnHelp}
           </button>
-          <button style={{ ...btnStyle, fontSize: 12, padding: "3px 10px", borderColor: C.borderAccent, color: C.textDim }} onClick={() => setLang(l => l === "en" ? "fr" : "en")} title="Switch language / Changer de langue">
+          <button style={{ ...btnStyle, fontSize: 12, padding: "3px 10px", borderColor: C.borderAccent, color: C.textDim }} onClick={() => setLang(l => { const n = l === "en" ? "fr" : "en"; localStorage.setItem("lang", n); return n; })} title="Switch language / Changer de langue">
             {lang === "en" ? "FR" : "EN"}
           </button>
           {walletError && <span style={{ color: C.red, fontSize: 12 }}>{walletError}</span>}
@@ -413,7 +417,15 @@ function App() {
         <div className="main-layout">
         <div className="sim-col">
         <div style={card}>
-          <div style={{ color: C.accent, marginBottom: 8, fontWeight: "bold" }}>{T.simTitle}</div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+            <div style={{ color: C.accent, fontWeight: "bold" }}>{T.simTitle}</div>
+            {(additionalGNET !== 0 || extensionDays !== 0 || extraSoul !== 0) && (
+              <button style={{ ...btnStyle, fontSize: 11, padding: "2px 8px", borderColor: C.borderAccent, color: C.textDim }}
+                onClick={() => { setAdditionalGNET(0); setExtensionDays(0); setExtraSoul(0); }}>
+                {T.btnReset}
+              </button>
+            )}
+          </div>
           {/* Address selection row */}
           <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
             <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -476,6 +488,11 @@ function App() {
             );
           })()}
 
+          {!simAddress && (
+            <div style={{ color: C.textDim, fontSize: 12, marginTop: 8, textAlign: "center" }}>
+              {T.simEmptyHint}
+            </div>
+          )}
           {simAddress && !users.find((u) => u.address.toLowerCase() === simAddress.toLowerCase()) && (
             <div style={{ color: C.orange, marginBottom: 6 }}>{T.addrNotFound}</div>
           )}

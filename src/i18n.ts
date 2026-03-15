@@ -11,6 +11,7 @@ interface Translations {
   titleRefresh: string;
   titlePool: string;
   titleHelp: string;
+  btnHelp: string;
 
   // Loading / error
   loadingDefault: string;
@@ -78,6 +79,8 @@ interface Translations {
   lockExpired: string;
   btnShowAll: (n: number) => string;
   btnCollapse: string;
+  btnReset: string;
+  simEmptyHint: string;
   yourSimRank: (rank: number) => string;
 
   // Pool modal
@@ -120,6 +123,7 @@ export const translations: Record<Lang, Translations> = {
     titleRefresh: "Re-fetch all data from chain and API",
     titlePool: "Open projected pool backing in a modal",
     titleHelp: "How does this work?",
+    btnHelp: "? Help",
 
     loadingDefault: "Loading...",
     loadFetchingLeaderboard: "Fetching leaderboard...",
@@ -181,6 +185,8 @@ export const translations: Record<Lang, Translations> = {
     lockExpired: "expired",
     btnShowAll: (n) => `↓ Show all ${n} users`,
     btnCollapse: "↑ Collapse",
+    btnReset: "Reset",
+    simEmptyHint: "← click a row in the leaderboard to simulate",
     yourSimRank: (rank) => `your simulated rank: #${rank}`,
 
     poolTitle: "Pool Backing Projection",
@@ -220,6 +226,7 @@ export const translations: Record<Lang, Translations> = {
     titleRefresh: "Récupérer toutes les données depuis la chaîne et l'API",
     titlePool: "Ouvrir la projection de couverture du pool",
     titleHelp: "Comment ça marche ?",
+    btnHelp: "? Aide",
 
     loadingDefault: "Chargement...",
     loadFetchingLeaderboard: "Récupération du classement...",
@@ -281,6 +288,8 @@ export const translations: Record<Lang, Translations> = {
     lockExpired: "expiré",
     btnShowAll: (n) => `↓ Voir les ${n} utilisateurs`,
     btnCollapse: "↑ Réduire",
+    btnReset: "Réinitialiser",
+    simEmptyHint: "← cliquez sur une ligne du classement pour simuler",
     yourSimRank: (rank) => `votre rang simulé : #${rank}`,
 
     poolTitle: "Projection de couverture du pool",

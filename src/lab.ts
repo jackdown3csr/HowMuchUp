@@ -1,9 +1,18 @@
 import { MONTHLY_EMISSION } from "./constants";
 import { calcReputation } from "./utils";
 
+/**
+ * One entry from the loaded leaderboard — used to simulate exact per-user veGNET decay.
+ */
+export interface LabPoolUser {
+  lockedGNET: number;
+  lockEnd: number;   // unix timestamp
+  soulScore: number;
+}
+
 export interface LabParams {
   startLockedGNET: number;
-  startDaysLeft: number;       // must be multiple of 7
+  startDaysLeft: number;       // floored to week boundary
   soulScore: number;
   addGNET: number;             // GNET added per contribution
   addFrequencyWeeks: number;   // 1 | 2 | 4
@@ -11,23 +20,42 @@ export interface LabParams {
   relockDays: number;          // days to set when extending / re-locking (rounded to week)
   relockExpired: boolean;      // auto-relock when lock reaches 0
   horizonMonths: number;       // 3 | 6 | 12 | 24
-  poolGrowthPctPerMonth: number; // neutral monthly pool growth %
-  spreadPct: number;           // pess = neutral - spread, opt = neutral + spread
+  /**
+   * Extra pool rep growth per month ON TOP of the natural veGNET decay.
+   * 0 = pure decay (nobody new enters or re-locks). Positive = new entrants / re-lockers.
+   * Negative (via spread) = some users exit early.
+   */
+  poolGrowthPctPerMonth: number;
+  spreadPct: number;           // pess = neutral + spread, opt = neutral - spread (can be negative)
   initialPoolTotalRep: number;
+  userActualReputation: number; // real on-chain rep at t=0; 0 = new wallet
+  /** All pool participants EXCLUDING self, for precise per-user veGNET decay simulation. */
+  poolUsers: LabPoolUser[];
+  snapshotTs: number; // unix timestamp at week-0 (when lock data was read from chain)
 }
 
 export interface ProjectionPoint {
   week: number;
+  month: number;
   monthLabel: string;
   veGNET: number;
   reputation: number;
+  otherRep_pess: number;
+  otherRep_neutral: number;
+  otherRep_opt: number;
+  poolRep_pess: number;
+  poolRep_neutral: number;
+  poolRep_opt: number;
+  share_pess: number;
+  share_neutral: number;
+  share_opt: number;
   gubi_pess: number;
   gubi_neutral: number;
   gubi_opt: number;
 }
 
 function roundToWeek(days: number): number {
-  return Math.round(days / 7) * 7;
+  return Math.floor(days / 7) * 7;
 }
 
 function clamp(val: number, min: number, max: number): number {
@@ -37,64 +65,136 @@ function clamp(val: number, min: number, max: number): number {
 /**
  * Pure math projection engine.
  * Mirrors real VotingEscrow: one lock per address.
- * Weekly ticks; output sampled every 4 weeks (≈ 1 point/month).
+ * Weekly ticks. gUBI earned each month = sum of 4 weekly slices (MONTHLY_EMISSION/4 each).
+ *
+ * Pool competition = exact per-user veGNET decay simulation (using real lockEnd from chain)
+ * + an optional extra-growth term on top (poolGrowthPctPerMonth) representing new entrants
+ * and re-lockers. poolGrowthPctPerMonth = 0 → pure deterministic decay (pessimistic floor).
  */
 export function projectGUBI(p: LabParams): ProjectionPoint[] {
-  const totalWeeks = p.horizonMonths * 4; // approximate
+  const totalWeeks = p.horizonMonths * 4;
+  const SECONDS_PER_WEEK = 7 * 86400;
 
   // Validate / normalise starting state
   let lockedGNET = Math.max(0, p.startLockedGNET);
   let daysLeft = clamp(roundToWeek(Math.max(0, p.startDaysLeft)), 0, 730);
   const relockDays = clamp(roundToWeek(Math.max(7, p.relockDays)), 7, 730);
+  const initialOtherRep = Math.max(0, p.initialPoolTotalRep - p.userActualReputation);
 
+  // ── Precompute per-week pool decay from actual lock expiries ──────────────
+  // Each week: simulate every pool user's veGNET using their real lockEnd timestamp.
+  // This is the deterministic floor — no assumptions about future behaviour.
+  const rawDecayByWeek: number[] = [];
+  for (let w = 0; w <= totalWeeks; w++) {
+    const weekTs = p.snapshotTs + w * SECONDS_PER_WEEK;
+    let rep = 0;
+    for (const u of p.poolUsers) {
+      const secsLeft = Math.max(0, u.lockEnd - weekTs);
+      if (secsLeft > 0 && u.lockedGNET > 0) {
+        const veGNET = u.lockedGNET * (secsLeft / 86400 / 730);
+        rep += calcReputation(u.soulScore, veGNET);
+      }
+    }
+    rawDecayByWeek.push(rep);
+  }
+  // Scale so week-0 matches chain-accurate initialOtherRep (removes seconds-vs-days drift).
+  const decayScale = rawDecayByWeek[0] > 0 ? initialOtherRep / rawDecayByWeek[0] : 1;
+  const decayByWeek = rawDecayByWeek.map(r => r * decayScale);
+
+  // Growth extras — rep added on top of decay from new entrants / re-lockers.
+  // growthPct = 0 → extras = 0 → three scenarios collapse to pure decay.
   const growthNeutral = p.poolGrowthPctPerMonth / 100;
-  const growthPess = (p.poolGrowthPctPerMonth + p.spreadPct) / 100; // pool grows faster → user share smaller
-  const growthOpt = Math.max(0, (p.poolGrowthPctPerMonth - p.spreadPct) / 100); // pool grows slower → user share bigger
+  const growthPess    = (p.poolGrowthPctPerMonth + p.spreadPct) / 100; // more activity → worse for user
+  const growthOpt     = (p.poolGrowthPctPerMonth - p.spreadPct) / 100; // less activity → better (can be negative)
+
+  // Weekly emission slice
+  const WEEKLY_EMISSION = MONTHLY_EMISSION / 4;
 
   const results: ProjectionPoint[] = [];
 
-  for (let week = 0; week <= totalWeeks; week++) {
-    // --- Contributions & lock extensions ---
-    if (week > 0 && p.addFrequencyWeeks > 0 && week % p.addFrequencyWeeks === 0) {
+  // Accumulators for the current 4-week block
+  let acc_pess = 0, acc_neutral = 0, acc_opt = 0;
+
+  // Emit the week-0 "Now" snapshot.
+  // rep uses userActualReputation from chain (exact), so pool = totalRep exactly
+  // and gUBI = real current monthly reward, not 0.
+  {
+    const veGNET = lockedGNET > 0 ? lockedGNET * (daysLeft / 730) : 0;
+    const nowRep = p.userActualReputation; // real chain value, not re-derived from slider
+    // At month=0 all scenarios share the same pool (no growth yet)
+    const nowPool = initialOtherRep + nowRep; // = p.initialPoolTotalRep exactly
+    const nowShare = nowPool > 0 ? nowRep / nowPool : 0;
+    const nowGubi = nowShare * MONTHLY_EMISSION;
+    results.push({
+      week: 0, month: 0, monthLabel: "Now",
+      veGNET,
+      reputation: nowRep,
+      otherRep_pess: initialOtherRep, otherRep_neutral: initialOtherRep, otherRep_opt: initialOtherRep,
+      poolRep_pess: nowPool, poolRep_neutral: nowPool, poolRep_opt: nowPool,
+      share_pess: nowShare, share_neutral: nowShare, share_opt: nowShare,
+      gubi_pess: nowGubi, gubi_neutral: nowGubi, gubi_opt: nowGubi,
+    });
+  }
+
+  for (let week = 1; week <= totalWeeks; week++) {
+    // --- Contributions & lock extensions (before computing this week's metrics) ---
+    if (p.addFrequencyWeeks > 0 && week % p.addFrequencyWeeks === 0) {
       if (p.addGNET > 0) {
         lockedGNET += p.addGNET;
       }
       if (p.extendOnAdd && p.addGNET > 0) {
-        // increase_unlock_time: new lockEnd = now + relockDays, but capped at max 730 from now
         const newDays = clamp(relockDays, daysLeft, 730);
         daysLeft = Math.max(daysLeft, newDays);
       }
     }
 
-    // --- Compute metrics at this point ---
+    // --- Compute metrics ---
     const veGNET = lockedGNET > 0 ? lockedGNET * (daysLeft / 730) : 0;
     const reputation = calcReputation(p.soulScore, veGNET);
 
-    // Sample every 4 weeks (≈ monthly) + week 0
-    if (week % 4 === 0) {
-      const month = Math.round(week / 4);
-      // Use integer month for pool growth — ensures clean monthly compounding at each data point
-      const poolRep_neutral = p.initialPoolTotalRep * Math.pow(1 + growthNeutral, month);
-      const poolRep_pess    = p.initialPoolTotalRep * Math.pow(1 + growthPess,    month);
-      const poolRep_opt     = p.initialPoolTotalRep * Math.pow(1 + growthOpt,     month);
-      const share = (pool: number) => pool > 0 ? reputation / pool : 0;
-      results.push({
-        week,
-        monthLabel: month === 0 ? "Now" : `M${month}`,
-        veGNET,
-        reputation,
-        gubi_pess:    share(poolRep_pess)    * MONTHLY_EMISSION,
-        gubi_neutral: share(poolRep_neutral) * MONTHLY_EMISSION,
-        gubi_opt:     share(poolRep_opt)     * MONTHLY_EMISSION,
-      });
-    }
+    // Pool competition = exact decay + extra growth from new entrants / re-lockers.
+    // Extra uses fractional month so within-month pool evolution is captured.
+    const fractionalMonth = week / 4;
+    const extra_neutral = initialOtherRep * (Math.pow(1 + growthNeutral, fractionalMonth) - 1);
+    const extra_pess    = initialOtherRep * (Math.pow(1 + growthPess,    fractionalMonth) - 1);
+    const extra_opt     = initialOtherRep * (Math.pow(1 + growthOpt,     fractionalMonth) - 1);
+    const otherRep_neutral = Math.max(0, decayByWeek[week] + extra_neutral);
+    const otherRep_pess    = Math.max(0, decayByWeek[week] + extra_pess);
+    const otherRep_opt     = Math.max(0, decayByWeek[week] + extra_opt);
+    const poolRep_neutral = otherRep_neutral + reputation;
+    const poolRep_pess    = otherRep_pess + reputation;
+    const poolRep_opt     = otherRep_opt + reputation;
+
+    // Accumulate weekly gUBI slice (1/4 of monthly emission)
+    acc_pess    += poolRep_pess    > 0 ? (reputation / poolRep_pess)    * WEEKLY_EMISSION : 0;
+    acc_neutral += poolRep_neutral > 0 ? (reputation / poolRep_neutral) * WEEKLY_EMISSION : 0;
+    acc_opt     += poolRep_opt     > 0 ? (reputation / poolRep_opt)     * WEEKLY_EMISSION : 0;
 
     // --- Advance time ---
     daysLeft = Math.max(0, daysLeft - 7);
-
-    // Re-lock expired
     if (daysLeft === 0 && p.relockExpired && lockedGNET > 0) {
       daysLeft = relockDays;
+    }
+
+    // Emit one data point per 4-week block
+    if (week % 4 === 0) {
+      const month = Math.round(week / 4);
+      const share_pess    = poolRep_pess    > 0 ? reputation / poolRep_pess    : 0;
+      const share_neutral = poolRep_neutral > 0 ? reputation / poolRep_neutral : 0;
+      const share_opt     = poolRep_opt     > 0 ? reputation / poolRep_opt     : 0;
+      results.push({
+        week, month,
+        monthLabel: `M${month}`,
+        veGNET, reputation,
+        otherRep_pess, otherRep_neutral, otherRep_opt,
+        poolRep_pess, poolRep_neutral, poolRep_opt,
+        share_pess, share_neutral, share_opt,
+        // gUBI = accumulated sum of 4 weekly slices, representing earned gUBI that month
+        gubi_pess: acc_pess,
+        gubi_neutral: acc_neutral,
+        gubi_opt: acc_opt,
+      });
+      acc_pess = 0; acc_neutral = 0; acc_opt = 0;
     }
   }
 

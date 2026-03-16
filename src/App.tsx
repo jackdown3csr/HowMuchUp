@@ -445,7 +445,7 @@ function App() {
 
       {/* Main layout: Leaderboard (left / order 1) + Simulator (right / order 2, sticky) */}
       {!loading && users.length > 0 && view === "lab" && (
-        <Lab lang={lang} walletUser={walletUser} selectedUser={selectedUser} initialPoolTotalRep={initialPoolTotalRep} onBack={() => setView("main")} />
+        <Lab lang={lang} walletUser={walletUser} selectedUser={selectedUser} initialPoolTotalRep={initialPoolTotalRep} users={users} snapshotTs={snapshotTs} onBack={() => setView("main")} />
       )}
       {!loading && users.length > 0 && view === "main" && (
         <div className="main-layout">

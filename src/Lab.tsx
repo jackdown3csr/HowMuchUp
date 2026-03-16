@@ -3,12 +3,10 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   Legend, ResponsiveContainer,
 } from "recharts";
-import { projectGUBI } from "./lab";
-import type { LabParams } from "./lab";
+import { projectGUBI, type LabPoolUser } from "./lab";
 import { formatNumber } from "./utils";
 import type { EnrichedUser } from "./types";
 import type { Lang } from "./i18n";
-import { INFLOW_SCHEDULE } from "./constants";
 import { translations } from "./i18n";
 
 // ── palette (mirrors App.tsx) ────────────────────────────────────────────────
@@ -82,33 +80,6 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function NumberInput({
-  value, onChange, min = 0, max, step = 1, style,
-}: {
-  value: number;
-  onChange: (v: number) => void;
-  min?: number;
-  max?: number;
-  step?: number;
-  style?: React.CSSProperties;
-}) {
-  return (
-    <input
-      type="number"
-      value={value}
-      min={min}
-      max={max}
-      step={step}
-      onChange={(e) => {
-        const v = Number(e.target.value) || 0;
-        const clamped = max !== undefined ? Math.min(max, Math.max(min, v)) : Math.max(min, v);
-        onChange(clamped);
-      }}
-      style={{ ...inputStyle, width: 90, textAlign: "right", ...style }}
-    />
-  );
-}
-
 function SliderRow({
   label, value, onChange, min = 0, max, step = 1, rangeStep, tooltip,
 }: {
@@ -163,21 +134,25 @@ interface LabProps {
   walletUser: EnrichedUser | null;
   selectedUser: EnrichedUser | null;
   initialPoolTotalRep: number;
+  users: EnrichedUser[];
+  snapshotTs: number;
   onBack: () => void;
 }
 
 // ── component ────────────────────────────────────────────────────────────────
-export default function Lab({ lang, walletUser, selectedUser, initialPoolTotalRep, onBack }: LabProps) {
+export default function Lab({ lang, walletUser, selectedUser, initialPoolTotalRep, users, snapshotTs, onBack }: LabProps) {
   const T = translations[lang];
+  const [nowTs] = useState(() => Math.floor(Date.now() / 1000));
+  const [inspectMonth, setInspectMonth] = useState(0);
+  const [inspectScenario, setInspectScenario] = useState<"pess" | "neutral" | "opt">("neutral");
 
   // Priority: connected wallet > simAddress selection > zeros
   const prefillUser = walletUser ?? selectedUser;
-  const now = Math.floor(Date.now() / 1000);
 
   function userToState(u: EnrichedUser | null) {
     return {
       gnet: Math.round(u?.lockedGNET ?? 0),
-      days: u?.lockEnd ? Math.max(0, Math.round((u.lockEnd - now) / 86400)) : 0,
+      days: u?.lockEnd ? Math.max(0, Math.round((u.lockEnd - nowTs) / 86400)) : 0,
       soul: Math.round(u?.soulScore ?? 100),
     };
   }
@@ -188,14 +163,32 @@ export default function Lab({ lang, walletUser, selectedUser, initialPoolTotalRe
   const [startLockedGNET, setStartLockedGNET] = useState(initial.gnet);
   const [startDaysLeft,   setStartDaysLeft]   = useState(initial.days);
   const [soulScore, setSoulScore] = useState(initial.soul);
+  // Actual on-chain reputation of the simulated address at t=0.
+  // Used to split pool into (others rep) and (self) without re-deriving from sliders.
+  // Fill from wallet → actual chain rep. Start fresh → 0 (new wallet not in pool).
+  const [userActualReputation, setUserActualReputation] = useState(prefillUser?.reputation ?? 0);
 
   function fillFromUser() {
     const s = userToState(prefillUser);
     setStartLockedGNET(s.gnet); setStartDaysLeft(s.days); setSoulScore(s.soul);
+    setUserActualReputation(prefillUser?.reputation ?? 0);
   }
   function startFresh() {
     setStartLockedGNET(0); setStartDaysLeft(0); setSoulScore(100);
+    setUserActualReputation(0);
   }
+
+  // Pool users for exact veGNET decay simulation — all users except the one being simulated.
+  // If userActualReputation === 0 (new wallet / start fresh), include everyone in pool.
+  const poolUsers = useMemo<LabPoolUser[]>(() => {
+    const selfAddr = (userActualReputation > 0 && prefillUser)
+      ? prefillUser.address.toLowerCase()
+      : null;
+    return users
+      .filter(u => !selfAddr || u.address.toLowerCase() !== selfAddr)
+      .map(u => ({ lockedGNET: u.lockedGNET, lockEnd: u.lockEnd, soulScore: u.soulScore }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [users, prefillUser?.address, userActualReputation]);
 
   // Contribution strategy
   const [addGNET,           setAddGNET]           = useState(0);
@@ -220,9 +213,9 @@ export default function Lab({ lang, walletUser, selectedUser, initialPoolTotalRe
 
   const horizonOptions = [3, 6, 12, 24];
 
-  const params: LabParams = {
+  const points = useMemo(() => projectGUBI({
     startLockedGNET,
-    startDaysLeft: Math.round(startDaysLeft / 7) * 7, // snap to week
+    startDaysLeft: Math.floor(startDaysLeft / 7) * 7, // floor to real VE week boundary
     soulScore,
     addGNET: addFrequencyWeeks === 0 ? 0 : addGNET,
     addFrequencyWeeks: addFrequencyWeeks === 0 ? 999 : addFrequencyWeeks,
@@ -233,24 +226,56 @@ export default function Lab({ lang, walletUser, selectedUser, initialPoolTotalRe
     poolGrowthPctPerMonth: poolGrowthPct,
     spreadPct,
     initialPoolTotalRep: initialPoolTotalRep > 0 ? initialPoolTotalRep : 1,
-  };
-
-  const points = useMemo(() => projectGUBI(params), [
+    userActualReputation,
+    poolUsers,
+    snapshotTs: snapshotTs > 0 ? snapshotTs : nowTs,
+  }), [
     startLockedGNET, startDaysLeft, soulScore,
     addGNET, addFrequencyWeeks, extendOnAdd, relockDays, relockExpired,
-    horizonMonths, poolGrowthPct, spreadPct, initialPoolTotalRep,
+    horizonMonths, poolGrowthPct, spreadPct, initialPoolTotalRep, userActualReputation,
+    poolUsers, snapshotTs, nowTs,
   ]);
 
   // Cumulative sums
-  const tableData = useMemo(() => {
-    let cumPess = 0, cumNeutral = 0, cumOpt = 0;
-    return points.map((p) => {
-      cumPess    += p.gubi_pess;
-      cumNeutral += p.gubi_neutral;
-      cumOpt     += p.gubi_opt;
-      return { ...p, cumPess, cumNeutral, cumOpt };
-    });
-  }, [points]);
+  const tableData = useMemo(
+    () => points.reduce<Array<(typeof points)[number] & { cumPess: number; cumNeutral: number; cumOpt: number }>>((rows, point) => {
+      const prev = rows[rows.length - 1];
+      rows.push({
+        ...point,
+        cumPess: (prev?.cumPess ?? 0) + point.gubi_pess,
+        cumNeutral: (prev?.cumNeutral ?? 0) + point.gubi_neutral,
+        cumOpt: (prev?.cumOpt ?? 0) + point.gubi_opt,
+      });
+      return rows;
+    }, []),
+    [points],
+  );
+
+  const inspectedPoint = useMemo(
+    () => points.find((point) => point.month === inspectMonth) ?? points[points.length - 1] ?? null,
+    [inspectMonth, points],
+  );
+  const currentPoint = points[0] ?? null;
+  const inspectedOtherRep = inspectScenario === "pess"
+    ? inspectedPoint?.otherRep_pess
+    : inspectScenario === "opt"
+      ? inspectedPoint?.otherRep_opt
+      : inspectedPoint?.otherRep_neutral;
+  const inspectedPoolRep = inspectScenario === "pess"
+    ? inspectedPoint?.poolRep_pess
+    : inspectScenario === "opt"
+      ? inspectedPoint?.poolRep_opt
+      : inspectedPoint?.poolRep_neutral;
+  const inspectedShare = inspectScenario === "pess"
+    ? inspectedPoint?.share_pess
+    : inspectScenario === "opt"
+      ? inspectedPoint?.share_opt
+      : inspectedPoint?.share_neutral;
+  const inspectedReward = inspectScenario === "pess"
+    ? inspectedPoint?.gubi_pess
+    : inspectScenario === "opt"
+      ? inspectedPoint?.gubi_opt
+      : inspectedPoint?.gubi_neutral;
 
   const fmt = (n: number) => formatNumber(n, 0);
 
@@ -325,7 +350,7 @@ export default function Lab({ lang, walletUser, selectedUser, initialPoolTotalRe
                   <SliderRow label={T.labAddGNETSlider} value={addGNET} onChange={setAddGNET} max={50000} step={100} rangeStep={100} tooltip={T.tipAddGNETSlider} />
                   <Toggle checked={extendOnAdd} onChange={setExtendOnAdd} label={T.labExtendOnAdd} tooltip={T.tipExtendOnAdd} />
                   {extendOnAdd && (
-                    <SliderRow label={T.labLockNewDays} value={relockDays} onChange={setRelockDays} max={730} step={7} rangeStep={7} tooltip={T.tipLockNewDays} />
+                    <SliderRow label={T.labLockNewDays} value={relockDays} onChange={setRelockDays} min={7} max={730} step={7} rangeStep={7} tooltip={T.tipLockNewDays} />
                   )}
                 </>
               )}
@@ -335,7 +360,7 @@ export default function Lab({ lang, walletUser, selectedUser, initialPoolTotalRe
                 <>
                   <Toggle checked={relockExpired} onChange={setRelockExpired} label={T.labRelockExpired} tooltip={T.tipRelockExpired} />
                   {relockExpired && (
-                    <SliderRow label={T.labRelockDays} value={relockDays} onChange={setRelockDays} max={730} step={7} rangeStep={7} tooltip={T.tipRelockDays} />
+                    <SliderRow label={T.labRelockDays} value={relockDays} onChange={setRelockDays} min={7} max={730} step={7} rangeStep={7} tooltip={T.tipRelockDays} />
                   )}
                 </>
               )}
@@ -354,23 +379,6 @@ export default function Lab({ lang, walletUser, selectedUser, initialPoolTotalRe
               {T.labScenarioNeutral}: {poolGrowthPct.toFixed(1)}%/mo &nbsp;·&nbsp;
               {T.labScenarioOpt}: {Math.max(0, poolGrowthPct - spreadPct).toFixed(1)}%/mo
             </div>
-            {/* INFLOW_SCHEDULE hint */}
-            {(() => {
-              const nowTs = Math.floor(Date.now() / 1000);
-              const nowDate = new Date(nowTs * 1000);
-              const upcoming = INFLOW_SCHEDULE.filter(([label]) => {
-                // Parse month names like "March 2026"
-                const d = new Date(label);
-                return !isNaN(d.getTime()) && d >= nowDate;
-              }).slice(0, 3);
-              if (upcoming.length === 0) return null;
-              const total = upcoming.reduce((s, [, v]) => s + v, 0);
-              return (
-                <div style={{ marginTop: 8, fontSize: 10, color: C.muted, borderTop: `1px solid ${C.border}`, paddingTop: 6 }}>
-                  ⚠️ Scheduled GNET unlocks (next {upcoming.length} months): {upcoming.map(([l, v]) => `${l.replace(/ 20\d\d/, '')} ${(v/1000).toFixed(0)}k`).join(', ')} — total ~{(total/1000).toFixed(0)}k GNET. If re-locked, pool rep grows. Factor this into pool growth %.
-                </div>
-              );
-            })()}
           </div>
 
           {/* Horizon */}
@@ -403,6 +411,66 @@ export default function Lab({ lang, walletUser, selectedUser, initialPoolTotalRe
             <div style={{ ...card, color: C.textDim, textAlign: "center", padding: 40 }}>{T.labNoData}</div>
           ) : (
             <>
+              <div style={card}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 10, flexWrap: "wrap" }}>
+                  <SectionLabel>{T.labInspectorTitle}</SectionLabel>
+                  <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                    <span style={{ color: C.muted, fontSize: 11 }}>{T.labInspectMonth}</span>
+                    <select
+                      value={inspectedPoint?.month ?? inspectMonth}
+                      onChange={(e) => setInspectMonth(Number(e.target.value))}
+                      style={{ ...inputStyle, minWidth: 88 }}
+                    >
+                      {points.map((point) => (
+                        <option key={point.week} value={point.month}>
+                          {point.monthLabel}
+                        </option>
+                      ))}
+                    </select>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {[
+                        { key: "pess", label: T.labScenarioPess },
+                        { key: "neutral", label: T.labScenarioNeutral },
+                        { key: "opt", label: T.labScenarioOpt },
+                      ].map((opt) => (
+                        <button
+                          key={opt.key}
+                          onClick={() => setInspectScenario(opt.key as "pess" | "neutral" | "opt")}
+                          style={{
+                            ...btnStyle,
+                            fontSize: 11,
+                            padding: "2px 8px",
+                            borderColor: inspectScenario === opt.key ? C.accent : C.borderAccent,
+                            color: inspectScenario === opt.key ? C.accent : C.textDim,
+                            background: inspectScenario === opt.key ? "#1a2a3a" : "#111",
+                          }}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {inspectedPoint && currentPoint && (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 8, fontSize: 12 }}>
+                    {[
+                      { label: T.labCurrentRep, value: fmt(currentPoint.reputation) },
+                      { label: T.labProjectedRep, value: fmt(inspectedPoint.reputation) },
+                      { label: T.labOtherPoolRep, value: fmt(inspectedOtherRep ?? 0) },
+                      { label: T.labTotalPoolRep, value: fmt(inspectedPoolRep ?? 0) },
+                      { label: T.labRewardShare, value: `${formatNumber((inspectedShare ?? 0) * 100, 4)}%` },
+                      { label: T.labProjectedReward, value: `${fmt(inspectedReward ?? 0)} gUBI` },
+                    ].map((item) => (
+                      <div key={item.label} style={{ border: `1px solid ${C.border}`, background: "#111", borderRadius: 4, padding: "8px 10px" }}>
+                        <div style={{ color: C.muted, fontSize: 10, letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 4 }}>{item.label}</div>
+                        <div style={{ color: C.textBright }}>{item.value}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {/* Chart */}
               <div style={{ ...card, padding: "14px 4px 0" }}>
                 <ResponsiveContainer width="100%" height={300}>

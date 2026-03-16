@@ -152,6 +152,14 @@ interface Translations {
   labStartFresh: string;
   labNoData: string;
   labMonths: (n: number) => string;
+  labInspectorTitle: string;
+  labInspectMonth: string;
+  labCurrentRep: string;
+  labProjectedRep: string;
+  labOtherPoolRep: string;
+  labTotalPoolRep: string;
+  labRewardShare: string;
+  labProjectedReward: string;
   // Lab tooltips
   tipStartGNET: string;
   tipStartDays: string;
@@ -314,6 +322,14 @@ export const translations: Record<Lang, Translations> = {
     labStartFresh: "Start fresh",
     labNoData: "Adjust parameters to see projection.",
     labMonths: (n) => `${n} month${n === 1 ? "" : "s"}`,
+    labInspectorTitle: "Sanity check",
+    labInspectMonth: "Inspect month",
+    labCurrentRep: "Current rep",
+    labProjectedRep: "Projected rep",
+    labOtherPoolRep: "Other pool rep",
+    labTotalPoolRep: "Total pool rep",
+    labRewardShare: "Reward share",
+    labProjectedReward: "Projected gUBI/mo",
     tipStartGNET: "Your currently locked GNET. veGNET = lockedGNET × (daysLeft / 730)",
     tipStartDays: "Days remaining on your lock. Max 730 (2 years). Snapped to weekly boundaries in simulation.",
     tipSoulScore: "On-chain ZK credential score. reputation = SoulScore × log₁₀(veGNET)",
@@ -326,7 +342,7 @@ export const translations: Record<Lang, Translations> = {
     tipLockNewDays: "Target lock duration when extending. Capped at 730 days from the current simulation week.",
     tipRelockExpired: "Automatically re-lock when daysLeft reaches 0. Not available when extend-on-add already prevents expiry.",
     tipRelockDays: "Duration to re-lock for when expired. Max 730 days.",
-    tipPoolGrowth: "Expected monthly % growth of total pool reputation (neutral scenario). Accounts for new users locking, existing users extending, and scheduled GNET unlocks being re-staked.",
+    tipPoolGrowth: "Extra pool reputation growth per month ON TOP of the natural veGNET decay from expiring locks. 0% = pure decay floor (nobody new enters or re-locks). Positive = new entrants and re-lockers offset the decay. The pessimistic scenario adds the spread (more competition), the optimistic scenario subtracts it (less).",
     tipSpread: "Symmetric uncertainty range. Pessimistic = pool grows faster (neutral + spread). Optimistic = pool grows slower (neutral − spread).",
     tipFillWallet: "Pre-fill starting position from your connected wallet or selected leaderboard address",
     tipStartFresh: "Reset starting position to zero (new wallet with no existing lock)",
@@ -474,6 +490,14 @@ export const translations: Record<Lang, Translations> = {
     labStartFresh: "Réinitialiser",
     labNoData: "Ajustez les paramètres pour voir la projection.",
     labMonths: (n) => `${n} mois`,
+    labInspectorTitle: "Contrôle de cohérence",
+    labInspectMonth: "Mois inspecté",
+    labCurrentRep: "Réputation actuelle",
+    labProjectedRep: "Réputation projetée",
+    labOtherPoolRep: "Réputation du reste du pool",
+    labTotalPoolRep: "Réputation totale du pool",
+    labRewardShare: "Part de récompense",
+    labProjectedReward: "gUBI/mois projeté",
     tipStartGNET: "Votre GNET actuellement verrouillé. veGNET = lockedGNET × (joursRestants / 730)",
     tipStartDays: "Jours restants sur votre verrou. Max 730 (2 ans). Arrondi aux semaines dans la simulation.",
     tipSoulScore: "Score d’identifiants ZK on-chain. réputation = SoulScore × log₁₀(veGNET)",
@@ -486,7 +510,7 @@ export const translations: Record<Lang, Translations> = {
     tipLockNewDays: "Durée cible lors de la prolongation. Plafonné à 730 jours depuis la semaine de simulation courante.",
     tipRelockExpired: "Re-verrouiller automatiquement quand joursRestants atteint 0. Non disponible si extend-on-add empêche déjà l’expiration.",
     tipRelockDays: "Durée du re-verrouillage automatique. Max 730 jours.",
-    tipPoolGrowth: "Croissance mensuelle attendue de la réputation totale du pool (scénario neutre). Tient compte des nouveaux verrous, prolongations et GNET débloqués re-verrouillés.",
+    tipPoolGrowth: "Croissance supplémentaire de la réputation du pool par mois, AU-DELÀ de la décroissance naturelle du veGNET. 0% = décroissance pure (aucun nouvel entrant ni re-verrou). Positif = nouveaux participants et re-verrouilleurs. Le scénario pessimiste ajoute le spread (plus de concurrence), l'optimiste le soustrait.",
     tipSpread: "Écart symétrique d’incertitude. Pessimiste = croissance plus rapide (neutre + écart). Optimiste = plus lente (neutre − écart).",
     tipFillWallet: "Pré-remplir la position de départ depuis votre portefeuille connecté ou l’adresse sélectionnée",
     tipStartFresh: "Réinitialiser la position de départ à zéro (nouveau portefeuille sans verrou existant)",

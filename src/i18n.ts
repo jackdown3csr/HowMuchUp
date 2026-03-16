@@ -45,6 +45,8 @@ interface Translations {
   placeholderAddress: string;
   placeholderSelect: string;
   addrNotFound: string;
+  btnNewWallet: string;
+  newWalletLabel: string;
 
   // Sliders
   sliderGNET: string;
@@ -154,6 +156,8 @@ export const translations: Record<Lang, Translations> = {
     placeholderAddress: "0x...",
     placeholderSelect: "— select —",
     addrNotFound: "Address not found in leaderboard.",
+    btnNewWallet: "New wallet",
+    newWalletLabel: "new wallet",
 
     sliderGNET: "+GNET lock",
     sliderDays: "+Lock days",
@@ -257,6 +261,8 @@ export const translations: Record<Lang, Translations> = {
     placeholderAddress: "0x...",
     placeholderSelect: "— choisir —",
     addrNotFound: "Adresse introuvable dans le classement.",
+    btnNewWallet: "Nouvelle adresse",
+    newWalletLabel: "nouvelle adresse",
 
     sliderGNET: "+GNET verrouillé",
     sliderDays: "+Jours de verrou",

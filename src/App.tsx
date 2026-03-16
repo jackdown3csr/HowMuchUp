@@ -9,6 +9,8 @@ import { isMetaMaskInstalled, connectMetaMask } from "./wallet";
 import { translations } from "./i18n";
 import type { Lang } from "./i18n";
 
+const NEW_WALLET = "__new__";
+
 // --- Dark theme palette ---
 const C = {
   bg: "#0e0e0e",
@@ -247,6 +249,7 @@ function App() {
 
   // Clamp extensionDays to the maximum possible when the selected user changes
   useEffect(() => {
+    if (simAddress === NEW_WALLET) return; // new wallet starts at 0 days, max is 730
     const user = users.find((u) => u.address.toLowerCase() === simAddress.toLowerCase());
     if (user) {
       const now = Math.floor(Date.now() / 1000);
@@ -260,13 +263,21 @@ function App() {
   const simTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => {
     if (!simAddress || users.length === 0) { setSimResult(null); return; }
-    const user = users.find(
-      (u) => u.address.toLowerCase() === simAddress.toLowerCase(),
-    );
+    let user: EnrichedUser | undefined;
+    if (simAddress === NEW_WALLET) {
+      user = {
+        address: NEW_WALLET, rank: users.length + 1, points: 0,
+        soulScore: 0, reputation: 0, veGNET: 0, lockedGNET: 0,
+        lockEnd: 0, balanceOfVeGNET: 0, monthlyReward: 0,
+        totalEarnings: 0, alreadyClaimed: 0, share: 0,
+      };
+    } else {
+      user = users.find((u) => u.address.toLowerCase() === simAddress.toLowerCase());
+    }
     if (!user) { setSimResult(null); return; }
     clearTimeout(simTimerRef.current);
     simTimerRef.current = setTimeout(() => {
-      setSimResult(simulate(user, users, additionalGNET, extensionDays, extraSoul));
+      setSimResult(simulate(user!, users, additionalGNET, extensionDays, extraSoul));
     }, 150);
     return () => clearTimeout(simTimerRef.current);
   }, [simAddress, additionalGNET, extensionDays, extraSoul, users]);
@@ -297,6 +308,18 @@ function App() {
   const now = Math.floor(Date.now() / 1000);
   const displayUsers = useMemo(() => {
     if (!simResult || !simAddress) return users;
+    if (simAddress === NEW_WALLET) {
+      const virtualUser: EnrichedUser = {
+        address: NEW_WALLET, rank: 0, points: 0,
+        soulScore: simResult.simSoulScore, reputation: simResult.simReputation,
+        veGNET: simResult.simVeGNET, lockedGNET: simResult.simLockedGNET,
+        lockEnd: 0, balanceOfVeGNET: 0, monthlyReward: simResult.simMonthlyReward,
+        totalEarnings: 0, alreadyClaimed: 0, share: 0,
+      };
+      const withVirtual = [...users, virtualUser];
+      withVirtual.sort((a, b) => b.reputation - a.reputation);
+      return withVirtual.map((u, i) => ({ ...u, rank: i + 1 }));
+    }
     const simAddrLow = simAddress.toLowerCase();
     const withSim = users.map((u) =>
       u.address.toLowerCase() === simAddrLow
@@ -430,12 +453,18 @@ function App() {
           <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
             <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
               {label(T.lblAddress)}
-              <input style={{ ...inputStyle, flex: 1, minWidth: 0 }} type="text" value={simAddress}
+              <input style={{ ...inputStyle, flex: 1, minWidth: 0 }} type="text"
+                value={simAddress === NEW_WALLET ? "" : simAddress}
                 onChange={(e) => setSimAddress(e.target.value)} placeholder={T.placeholderAddress} />
+              <button
+                style={{ ...btnStyle, fontSize: 11, padding: "2px 8px", borderColor: simAddress === NEW_WALLET ? C.accent : C.borderAccent, color: simAddress === NEW_WALLET ? C.accent : C.textDim, whiteSpace: "nowrap" }}
+                onClick={() => setSimAddress(simAddress === NEW_WALLET ? "" : NEW_WALLET)}
+                title={T.btnNewWallet}
+              >{T.btnNewWallet}</button>
             </label>
             <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
               {label(T.lblOrPick)}
-              <select style={{ ...inputStyle, flex: 1, minWidth: 0 }} value={simAddress} onChange={(e) => setSimAddress(e.target.value)}>
+              <select style={{ ...inputStyle, flex: 1, minWidth: 0 }} value={simAddress === NEW_WALLET ? "" : simAddress} onChange={(e) => setSimAddress(e.target.value)}>
                 <option value="">{T.placeholderSelect}</option>
                 {users.map((u) => (
                   <option key={u.address} value={u.address}>
@@ -448,7 +477,7 @@ function App() {
 
           {/* Sliders */}
           {(() => {
-            const maxExtension = simResult ? Math.max(0, 730 - simResult.currentDaysLeft) : 730;
+            const maxExtension = simAddress === NEW_WALLET ? 730 : (simResult ? Math.max(0, 730 - simResult.currentDaysLeft) : 730);
             const lockHint = simResult
               ? `→ ${simResult.simDaysLeft}d / 730${simResult.currentDaysLeft >= 730 ? " (maxed)" : ""}`
               : undefined;
@@ -457,7 +486,7 @@ function App() {
                 {([
                   { lbl: T.sliderGNET,  val: additionalGNET, set: setAdditionalGNET, min: 0, max: 100000,      numMax: Infinity,    step: 500, rangeStep: 50,  hint: undefined, showMax: false },
                   { lbl: T.sliderDays,  val: extensionDays,  set: setExtensionDays,  min: 0, max: maxExtension, numMax: maxExtension, step: 1,   rangeStep: 1,   hint: lockHint,  showMax: true },
-                  { lbl: T.sliderSoul,  val: extraSoul,      set: setExtraSoul,      min: 0, max: 5000,         numMax: 5000,        step: 10,  rangeStep: 1,   hint: undefined, showMax: false },
+                  { lbl: T.sliderSoul,  val: extraSoul,      set: setExtraSoul,      min: 0, max: 5000,         numMax: Infinity,    step: 10,  rangeStep: 1,   hint: undefined, showMax: false },
                 ] as { lbl: string; val: number; set: (v: number) => void; min: number; max: number; numMax: number; step: number; rangeStep: number; hint?: string; showMax: boolean }[]).map(
                   ({ lbl, val, set, min, max, numMax, step, rangeStep, hint, showMax }) => (
                     <div key={lbl} className="slider-row">
@@ -488,12 +517,12 @@ function App() {
             );
           })()}
 
-          {!simAddress && (
+          {!simAddress && simAddress !== NEW_WALLET && (
             <div style={{ color: C.textDim, fontSize: 12, marginTop: 8, textAlign: "center" }}>
               {T.simEmptyHint}
             </div>
           )}
-          {simAddress && !users.find((u) => u.address.toLowerCase() === simAddress.toLowerCase()) && (
+          {simAddress && simAddress !== NEW_WALLET && !users.find((u) => u.address.toLowerCase() === simAddress.toLowerCase()) && (
             <div style={{ color: C.orange, marginBottom: 6 }}>{T.addrNotFound}</div>
           )}
 
@@ -547,7 +576,7 @@ function App() {
         <div style={{ ...card, padding: 0, overflow: "hidden" }}>
           <div style={{ padding: "8px 14px", borderBottom: `1px solid ${C.border}` }}>
             <div style={{ color: C.accent, fontWeight: "bold" }}>{T.lbTitle} <span style={{ color: C.textDim, fontWeight: "normal" }}>({users.length} {T.statUsers})</span></div>
-            {simResult && <div style={{ color: C.orange, fontSize: 11, fontWeight: "normal", marginTop: 2 }}>{T.lbSimNotice} {shortAddr(simAddress)}</div>}
+            {simResult && <div style={{ color: C.orange, fontSize: 11, fontWeight: "normal", marginTop: 2 }}>{T.lbSimNotice} {simAddress === NEW_WALLET ? T.newWalletLabel : shortAddr(simAddress)}</div>}
           </div>
           <div style={{ overflowX: "auto" }}>
             <table style={{ borderCollapse: "collapse", width: "100%" }}>
@@ -585,11 +614,15 @@ function App() {
                     >
                       <td style={{ ...td, color: isSelected && simResult ? C.orange : C.textDim }}>{u.rank}</td>
                       <td style={td}>
-                        <a style={{ color: isSelected ? C.orange : C.accent, textDecoration: "none" }}
-                          href="#" title={u.address}
-                          onClick={(e) => { e.preventDefault(); setSimAddress(u.address); }}>
-                          {shortAddr(u.address)}
-                        </a>
+                        {u.address === NEW_WALLET ? (
+                          <span style={{ color: C.orange, fontStyle: "italic" }}>{T.newWalletLabel}</span>
+                        ) : (
+                          <a style={{ color: isSelected ? C.orange : C.accent, textDecoration: "none" }}
+                            href="#" title={u.address}
+                            onClick={(e) => { e.preventDefault(); setSimAddress(u.address); }}>
+                            {shortAddr(u.address)}
+                          </a>
+                        )}
                       </td>
                       <td style={tdRight} className="col-hide-mobile">{formatNumber(u.soulScore, 0)}</td>
                       <td style={tdRight} className="col-hide-mobile">{formatNumber(u.lockedGNET)}</td>

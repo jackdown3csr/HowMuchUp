@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /c/Users/honza/Documents/gitclones/leaderboard2 -maxdepth 1 -type f -name *.css -o -name *.style)",
+      "Bash(wc -l /c/Users/honza/Documents/gitclones/leaderboard2/src/*.ts* /c/Users/honza/Documents/gitclones/leaderboard2/tsconfig*.json /c/Users/honza/Documents/gitclones/leaderboard2/vite.config.ts)"
+    ]
+  }
+}

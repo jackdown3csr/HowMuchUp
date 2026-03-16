@@ -112,6 +112,63 @@ interface Translations {
   helpSliderSoulDesc: string;
   helpSourcesTitle: string;
   helpSourcesBody: string;
+
+  // Lab
+  labTitle: string;
+  labDisclaimer: string;
+  labBtnOpen: string;
+  labBtnBack: string;
+  labStartGNET: string;
+  labStartDays: string;
+  labSoulScore: string;
+  labAddGNET: string;
+  labAddGNETSlider: string;
+  labFrequency: string;
+  labFreqWeekly: string;
+  labFreqBiweekly: string;
+  labFreqMonthly: string;
+  labFreqNone: string;
+  labLockNewDays: string;
+  labExtendOnAdd: string;
+  labRelockExpired: string;
+  labRelockDays: string;
+  labHorizon: string;
+  labPoolGrowth: string;
+  labSpread: string;
+  labScenarioPess: string;
+  labScenarioNeutral: string;
+  labScenarioOpt: string;
+  labChartYAxis: string;
+  labTableMonth: string;
+  labTablePess: string;
+  labTableNeutral: string;
+  labTableOpt: string;
+  labTableCumPess: string;
+  labTableCumNeutral: string;
+  labTableCumOpt: string;
+  labSectionStart: string;
+  labSectionPool: string;
+  labFillWallet: string;
+  labStartFresh: string;
+  labNoData: string;
+  labMonths: (n: number) => string;
+  // Lab tooltips
+  tipStartGNET: string;
+  tipStartDays: string;
+  tipSoulScore: string;
+  tipAddGNETSlider: string;
+  tipFreqNone: string;
+  tipFreqWeekly: string;
+  tipFreqBiweekly: string;
+  tipFreqMonthly: string;
+  tipExtendOnAdd: string;
+  tipLockNewDays: string;
+  tipRelockExpired: string;
+  tipRelockDays: string;
+  tipPoolGrowth: string;
+  tipSpread: string;
+  tipFillWallet: string;
+  tipStartFresh: string;
 }
 
 export const translations: Record<Lang, Translations> = {
@@ -218,6 +275,61 @@ export const translations: Record<Lang, Translations> = {
     helpSliderSoulDesc: "— hypothetical future credential gains. Real SoulScore can only increase on-chain.",
     helpSourcesTitle: "Data sources",
     helpSourcesBody: "Leaderboard and user stats: Galactica Admin API. Lock data (lockedGNET, lockEnd, veGNET) and gUBI supply: on-chain at block snapshot. All data refreshes on every page load or manual ↺ Refresh.",
+
+    labTitle: "⚗ Lab — gUBI Projection",
+    labDisclaimer: "⚗ Experimental — purely mathematical projection. Not a forecast. Pool competition is unpredictable.",
+    labBtnOpen: "⚗ Lab",
+    labBtnBack: "← Back",
+    labStartGNET: "Locked GNET",
+    labStartDays: "Days left",
+    labSoulScore: "SoulScore",
+    labAddGNET: "Contributions",
+    labAddGNETSlider: "GNET per period",
+    labFrequency: "Frequency",
+    labFreqWeekly: "Weekly",
+    labFreqBiweekly: "Every 2 weeks",
+    labFreqMonthly: "Monthly (4 weeks)",
+    labFreqNone: "No contributions",
+    labLockNewDays: "Lock new GNET for (days)",
+    labExtendOnAdd: "Extend lock when adding",
+    labRelockExpired: "Re-lock when expired",
+    labRelockDays: "Re-lock duration (days)",
+    labHorizon: "Horizon",
+    labPoolGrowth: "Pool growth %/month (neutral)",
+    labSpread: "Scenario spread %",
+    labScenarioPess: "Pessimistic",
+    labScenarioNeutral: "Neutral",
+    labScenarioOpt: "Optimistic",
+    labChartYAxis: "gUBI / month",
+    labTableMonth: "Month",
+    labTablePess: "Pess. (gUBI/mo)",
+    labTableNeutral: "Neutral (gUBI/mo)",
+    labTableOpt: "Opt. (gUBI/mo)",
+    labTableCumPess: "Cum. Pess.",
+    labTableCumNeutral: "Cum. Neutral",
+    labTableCumOpt: "Cum. Opt.",
+    labSectionStart: "Starting position",
+    labSectionPool: "Pool assumptions",
+    labFillWallet: "Fill from wallet",
+    labStartFresh: "Start fresh",
+    labNoData: "Adjust parameters to see projection.",
+    labMonths: (n) => `${n} month${n === 1 ? "" : "s"}`,
+    tipStartGNET: "Your currently locked GNET. veGNET = lockedGNET × (daysLeft / 730)",
+    tipStartDays: "Days remaining on your lock. Max 730 (2 years). Snapped to weekly boundaries in simulation.",
+    tipSoulScore: "On-chain ZK credential score. reputation = SoulScore × log₁₀(veGNET)",
+    tipAddGNETSlider: "Amount of GNET added to your locked position each period (mirrors increase_amount on-chain)",
+    tipFreqNone: "No periodic contributions — simulate current position decaying over time",
+    tipFreqWeekly: "Add GNET every week (minimum VotingEscrow interval)",
+    tipFreqBiweekly: "Add GNET every 2 weeks",
+    tipFreqMonthly: "Add GNET every 4 weeks (~monthly)",
+    tipExtendOnAdd: "Each time you add GNET, also extend lock duration (increase_unlock_time). If already at 730 days, extension has no effect.",
+    tipLockNewDays: "Target lock duration when extending. Capped at 730 days from the current simulation week.",
+    tipRelockExpired: "Automatically re-lock when daysLeft reaches 0. Not available when extend-on-add already prevents expiry.",
+    tipRelockDays: "Duration to re-lock for when expired. Max 730 days.",
+    tipPoolGrowth: "Expected monthly % growth of total pool reputation (neutral scenario). Accounts for new users locking, existing users extending, and scheduled GNET unlocks being re-staked.",
+    tipSpread: "Symmetric uncertainty range. Pessimistic = pool grows faster (neutral + spread). Optimistic = pool grows slower (neutral − spread).",
+    tipFillWallet: "Pre-fill starting position from your connected wallet or selected leaderboard address",
+    tipStartFresh: "Reset starting position to zero (new wallet with no existing lock)",
   },
 
   fr: {
@@ -323,5 +435,61 @@ export const translations: Record<Lang, Translations> = {
     helpSliderSoulDesc: "— gains hypothétiques futurs d'identifiants. Le vrai SoulScore ne peut qu'augmenter on-chain.",
     helpSourcesTitle: "Sources de données",
     helpSourcesBody: "Classement et statistiques : API Galactica Admin. Données de verrou (lockedGNET, lockEnd, veGNET) et offre gUBI : on-chain à l'instantané de bloc. Toutes les données sont actualisées à chaque chargement ou en appuyant sur ↺ Actualiser.",
+
+    labTitle: "⚗ Lab — Projection gUBI",
+    labDisclaimer: "⚗ Expérimental — projection purement mathématique. Pas une prévision. La concurrence du pool est imprévisible.",
+    labBtnOpen: "⚗ Lab",
+    labBtnBack: "← Retour",
+    labStartGNET: "GNET verrouillé",
+    labStartDays: "Jours restants",
+    labSoulScore: "SoulScore",
+    labAddGNET: "Contributions",
+    labAddGNETSlider: "GNET par période",
+    labFrequency: "Fréquence",
+    labFreqWeekly: "Hebdomadaire",
+    labFreqBiweekly: "Toutes les 2 semaines",
+    labFreqMonthly: "Mensuel (4 semaines)",
+    labFreqNone: "Aucun apport",
+    labLockNewDays: "Verrouiller le nouveau GNET pour (jours)",
+    labExtendOnAdd: "Prolonger le verrou à chaque ajout",
+    labRelockExpired: "Re-verrouiller à l'expiration",
+    labRelockDays: "Durée de re-verrouillage (jours)",
+    labHorizon: "Horizon",
+    labPoolGrowth: "Croissance pool %/mois (neutre)",
+    labSpread: "Écart de scénario %",
+    labScenarioPess: "Pessimiste",
+    labScenarioNeutral: "Neutre",
+    labScenarioOpt: "Optimiste",
+    labChartYAxis: "gUBI / mois",
+    labTableMonth: "Mois",
+    labTablePess: "Pess. (gUBI/mois)",
+    labTableNeutral: "Neutre (gUBI/mois)",
+    labTableOpt: "Opt. (gUBI/mois)",
+    labTableCumPess: "Cum. Pess.",
+    labTableCumNeutral: "Cum. Neutre",
+    labTableCumOpt: "Cum. Opt.",
+    labSectionStart: "Position de départ",
+    labSectionPool: "Hypothèses pool",
+    labFillWallet: "Depuis le portefeuille",
+    labStartFresh: "Réinitialiser",
+    labNoData: "Ajustez les paramètres pour voir la projection.",
+    labMonths: (n) => `${n} mois`,
+    tipStartGNET: "Votre GNET actuellement verrouillé. veGNET = lockedGNET × (joursRestants / 730)",
+    tipStartDays: "Jours restants sur votre verrou. Max 730 (2 ans). Arrondi aux semaines dans la simulation.",
+    tipSoulScore: "Score d’identifiants ZK on-chain. réputation = SoulScore × log₁₀(veGNET)",
+    tipAddGNETSlider: "Montant de GNET ajouté à votre position verrouillée chaque période (increase_amount on-chain)",
+    tipFreqNone: "Aucun apport périodique — simuler la décroissance de la position actuelle",
+    tipFreqWeekly: "Ajouter du GNET chaque semaine (intervalle minimum du VotingEscrow)",
+    tipFreqBiweekly: "Ajouter du GNET toutes les 2 semaines",
+    tipFreqMonthly: "Ajouter du GNET toutes les 4 semaines (~mensuel)",
+    tipExtendOnAdd: "À chaque ajout de GNET, prolonger aussi la durée du verrou (increase_unlock_time). Sans effet si déjà à 730 jours.",
+    tipLockNewDays: "Durée cible lors de la prolongation. Plafonné à 730 jours depuis la semaine de simulation courante.",
+    tipRelockExpired: "Re-verrouiller automatiquement quand joursRestants atteint 0. Non disponible si extend-on-add empêche déjà l’expiration.",
+    tipRelockDays: "Durée du re-verrouillage automatique. Max 730 jours.",
+    tipPoolGrowth: "Croissance mensuelle attendue de la réputation totale du pool (scénario neutre). Tient compte des nouveaux verrous, prolongations et GNET débloqués re-verrouillés.",
+    tipSpread: "Écart symétrique d’incertitude. Pessimiste = croissance plus rapide (neutre + écart). Optimiste = plus lente (neutre − écart).",
+    tipFillWallet: "Pré-remplir la position de départ depuis votre portefeuille connecté ou l’adresse sélectionnée",
+    tipStartFresh: "Réinitialiser la position de départ à zéro (nouveau portefeuille sans verrou existant)",
+
   },
 };

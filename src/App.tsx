@@ -8,6 +8,7 @@ import { simulate } from "./simulation";
 import { isMetaMaskInstalled, connectMetaMask } from "./wallet";
 import { translations } from "./i18n";
 import type { Lang } from "./i18n";
+import Lab from "./Lab.tsx";
 
 const NEW_WALLET = "__new__";
 
@@ -122,6 +123,7 @@ function App() {
   const [showHelp, setShowHelp] = useState(false);
   const [showStats, setShowStats] = useState(true);
   const [showAllUsers, setShowAllUsers] = useState(false);
+  const [view, setView] = useState<"main" | "lab">("main");
   const [lang, setLang] = useState<Lang>(() => {
     const saved = localStorage.getItem("lang") as Lang | null;
     if (saved === "en" || saved === "fr") return saved;
@@ -306,6 +308,9 @@ function App() {
 
   // Leaderboard with simulation applied: replace selected user's rep, re-sort
   const now = Math.floor(Date.now() / 1000);
+  const initialPoolTotalRep = useMemo(() => users.reduce((s, u) => s + u.reputation, 0), [users]);
+  const selectedUser = useMemo(() => users.find(u => u.address.toLowerCase() === simAddress.toLowerCase()) ?? null, [users, simAddress]);
+  const walletUser = useMemo(() => walletAddr ? (users.find(u => u.address.toLowerCase() === walletAddr.toLowerCase()) ?? null) : null, [users, walletAddr]);
   const displayUsers = useMemo(() => {
     if (!simResult || !simAddress) return users;
     if (simAddress === NEW_WALLET) {
@@ -381,6 +386,9 @@ function App() {
           <button style={{ ...btnStyle, fontSize: 12, padding: "3px 10px", borderColor: showHelp ? C.accent : C.borderAccent, color: showHelp ? C.accent : C.textDim }} onClick={() => setShowHelp(v => !v)} title={T.titleHelp}>
             {T.btnHelp}
           </button>
+          <button style={{ ...btnStyle, fontSize: 12, padding: "3px 10px", borderColor: view === "lab" ? C.accent : C.borderAccent, color: view === "lab" ? C.accent : C.textDim }} onClick={() => setView(v => v === "lab" ? "main" : "lab")} title="⚗ Lab — gUBI projection">
+            {view === "lab" ? T.labBtnBack : T.labBtnOpen}
+          </button>
           <button style={{ ...btnStyle, fontSize: 12, padding: "3px 10px", borderColor: C.borderAccent, color: C.textDim }} onClick={() => setLang(l => { const n = l === "en" ? "fr" : "en"; localStorage.setItem("lang", n); return n; })} title="Switch language / Changer de langue">
             {lang === "en" ? "FR" : "EN"}
           </button>
@@ -436,7 +444,10 @@ function App() {
       )}
 
       {/* Main layout: Leaderboard (left / order 1) + Simulator (right / order 2, sticky) */}
-      {!loading && users.length > 0 && (
+      {!loading && users.length > 0 && view === "lab" && (
+        <Lab lang={lang} walletUser={walletUser} selectedUser={selectedUser} initialPoolTotalRep={initialPoolTotalRep} onBack={() => setView("main")} />
+      )}
+      {!loading && users.length > 0 && view === "main" && (
         <div className="main-layout">
         <div className="sim-col">
         <div style={card}>

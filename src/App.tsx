@@ -370,6 +370,19 @@ function App() {
   return (
     <div className="app-root" style={{ fontFamily: "monospace", fontSize: 13, background: C.bg, color: C.text, minHeight: "100vh", boxSizing: "border-box" }}>
 
+      {/* Flambeur promo banner */}
+      <div style={{ fontFamily: "monospace", fontSize: 12, color: C.textDim, background: C.bg, borderBottom: `1px solid ${C.border}`, padding: "6px 12px", marginBottom: 10, letterSpacing: "0.02em" }}>
+        {lang === "fr" ? (
+          <>◈ Vous prévoyez de brûler des gUBI ? Utilisez{" "}
+          <a href="https://flambeur.xyz" target="_blank" rel="noopener noreferrer" style={{ color: C.accent, textDecoration: "none", fontWeight: "bold" }}>flambeur.xyz ↗</a>
+          {" "}— obtenez des WGNET avec bonus pour tous vos gUBI, ARCHAI inclus.</>
+        ) : (
+          <>◈ Have gUBI to burn? Use{" "}
+          <a href="https://flambeur.xyz" target="_blank" rel="noopener noreferrer" style={{ color: C.accent, textDecoration: "none", fontWeight: "bold" }}>flambeur.xyz ↗</a>
+          {" "}instead — get WGNET for your full gUBI balance, including ARCHAI, with a bonus.</>
+        )}
+      </div>
+
       {/* Header */}
       <div className="site-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, borderBottom: `1px solid ${C.border}`, paddingBottom: 8 }}>
         <div className="header-brand">

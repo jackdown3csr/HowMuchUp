@@ -123,6 +123,7 @@ function App() {
   const [showHelp, setShowHelp] = useState(false);
   const [showStats, setShowStats] = useState(true);
   const [showAllUsers, setShowAllUsers] = useState(false);
+  const [showAllCols, setShowAllCols] = useState(false);
   const [view, setView] = useState<"main" | "lab">("main");
   const [lang, setLang] = useState<Lang>(() => {
     const saved = localStorage.getItem("lang") as Lang | null;
@@ -463,7 +464,7 @@ function App() {
       {!loading && users.length > 0 && view === "main" && (
         <div className="main-layout">
         <div className="sim-col">
-        <div style={card}>
+        <div className="sim-card" style={card}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
             <div style={{ color: C.accent, fontWeight: "bold" }}>{T.simTitle}</div>
             {(additionalGNET !== 0 || extensionDays !== 0 || extraSoul !== 0) && (
@@ -475,7 +476,7 @@ function App() {
           </div>
           {/* Address selection row */}
           <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
-            <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <label className="sim-addr-row" style={{ display: "flex", gap: 8, alignItems: "center" }}>
               {label(T.lblAddress)}
               <input style={{ ...inputStyle, flex: 1, minWidth: 0 }} type="text"
                 value={simAddress === NEW_WALLET ? "" : simAddress}
@@ -599,15 +600,24 @@ function App() {
         <div className="lb-col">
         <div style={{ ...card, padding: 0, overflow: "hidden" }}>
           <div style={{ padding: "8px 14px", borderBottom: `1px solid ${C.border}` }}>
-            <div style={{ color: C.accent, fontWeight: "bold" }}>{T.lbTitle} <span style={{ color: C.textDim, fontWeight: "normal" }}>({users.length} {T.statUsers})</span></div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <div style={{ color: C.accent, fontWeight: "bold" }}>{T.lbTitle} <span style={{ color: C.textDim, fontWeight: "normal" }}>({users.length} {T.statUsers})</span></div>
+              <button
+                className="show-cols-btn"
+                style={{ ...btnStyle, fontSize: 11, padding: "2px 8px", whiteSpace: "nowrap" }}
+                onClick={() => setShowAllCols(v => !v)}
+              >
+                {showAllCols ? T.btnHideCols : T.btnShowCols}
+              </button>
+            </div>
             {simResult && <div style={{ color: C.orange, fontSize: 11, fontWeight: "normal", marginTop: 2 }}>{T.lbSimNotice} {simAddress === NEW_WALLET ? T.newWalletLabel : shortAddr(simAddress)}</div>}
           </div>
-          <div style={{ overflowX: "auto" }}>
+          <div className={`lb-table-scroll ${showAllCols ? "show-all-cols" : ""}`}>
             <table style={{ borderCollapse: "collapse", width: "100%" }}>
               <thead>
                 <tr>
-                  <th style={th}>{T.colHash}</th>
-                  <th style={th}>{T.colAddress}</th>
+                  <th style={th} className="col-sticky-rank">{T.colHash}</th>
+                  <th style={th} className="col-sticky-addr">{T.colAddress}</th>
                   <th style={th} className="col-hide-mobile">{T.colSoulScore}</th>
                   <th style={th} className="col-hide-mobile">{T.colLockedGNET}</th>
                   <th style={th} className="col-hide-mobile">{T.colVeGNET}</th>
@@ -636,8 +646,8 @@ function App() {
                       onMouseEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLTableRowElement).style.background = C.highlightRow; }}
                       onMouseLeave={(e) => { if (!isSelected) (e.currentTarget as HTMLTableRowElement).style.background = ""; }}
                     >
-                      <td style={{ ...td, color: isSelected && simResult ? C.orange : C.textDim }}>{u.rank}</td>
-                      <td style={td}>
+                      <td style={{ ...td, color: isSelected && simResult ? C.orange : C.textDim }} className="col-sticky-rank">{u.rank}</td>
+                      <td style={td} className="col-sticky-addr">
                         {u.address === NEW_WALLET ? (
                           <span style={{ color: C.orange, fontStyle: "italic" }}>{T.newWalletLabel}</span>
                         ) : (

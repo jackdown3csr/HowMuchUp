@@ -72,6 +72,15 @@ input[type="number"] {
   gap: 8px 24px;
 }
 
+/* ── Leaderboard scroll wrapper ── */
+.lb-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Toggle button — hidden on desktop, shown on mobile */
+.show-cols-btn { display: none; }
+
 /* ── Mobile ── */
 @media (max-width: 900px) {
   .main-layout {
@@ -79,18 +88,57 @@ input[type="number"] {
   }
   .sim-col {
     width: 100%;
-    position: static;
-    max-height: none;
-    order: 1;   /* simulator on top on mobile */
+    order: 1;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: #0e0e0e;
+    max-height: calc(100vh - 8px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #3a3a3a transparent;
   }
+  .sim-col::-webkit-scrollbar { width: 4px; }
+  .sim-col::-webkit-scrollbar-track { background: transparent; }
+  .sim-col::-webkit-scrollbar-thumb { background: #3a3a3a; border-radius: 2px; }
   .lb-col {
     order: 2;
+    max-width: 100%;
+    overflow: hidden;
   }
 }
 
 @media (max-width: 600px) {
   /* Hide non-essential leaderboard columns */
   .col-hide-mobile { display: none !important; }
+
+  /* Show toggle button on mobile */
+  .show-cols-btn { display: inline-block; }
+
+  /* When expanded: show all columns + enable horizontal scroll */
+  .show-all-cols .col-hide-mobile { display: table-cell !important; }
+
+  /* Sticky first two columns when scrolling horizontally */
+  table tbody tr { background: #0e0e0e; }
+  table thead tr { background: #1e1e1e; }
+  .col-sticky-rank {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: inherit;
+  }
+  .col-sticky-addr {
+    position: sticky;
+    left: 36px;
+    z-index: 2;
+    background: inherit;
+  }
+
+  /* Sim card tighter on small screens */
+  .sim-card { padding: 8px 8px !important; }
+
+  /* Address row: allow "New wallet" button to wrap to next line */
+  .sim-addr-row { flex-wrap: wrap; }
 
   /* Tighter page padding */
   .app-root { padding: 4px 6px 10px !important; }

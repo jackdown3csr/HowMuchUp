@@ -81,6 +81,8 @@ interface Translations {
   lockExpired: string;
   btnShowAll: (n: number) => string;
   btnCollapse: string;
+  btnShowCols: string;
+  btnHideCols: string;
   btnReset: string;
   simEmptyHint: string;
   yourSimRank: (rank: number) => string;
@@ -254,6 +256,8 @@ export const translations: Record<Lang, Translations> = {
     lockExpired: "expired",
     btnShowAll: (n) => `↓ Show all ${n} users`,
     btnCollapse: "↑ Collapse",
+    btnShowCols: "► More columns",
+    btnHideCols: "◄ Fewer columns",
     btnReset: "Reset",
     simEmptyHint: "← click a row in the leaderboard to simulate",
     yourSimRank: (rank) => `your simulated rank: #${rank}`,
@@ -422,6 +426,8 @@ export const translations: Record<Lang, Translations> = {
     lockExpired: "expiré",
     btnShowAll: (n) => `↓ Voir les ${n} utilisateurs`,
     btnCollapse: "↑ Réduire",
+    btnShowCols: "► Plus de colonnes",
+    btnHideCols: "◄ Moins de colonnes",
     btnReset: "Réinitialiser",
     simEmptyHint: "← cliquez sur une ligne du classement pour simuler",
     yourSimRank: (rank) => `votre rang simulé : #${rank}`,

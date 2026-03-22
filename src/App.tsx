@@ -642,7 +642,7 @@ function App() {
                       key={u.address}
                       ref={isSelected ? selectedRowRef : undefined}
                       onClick={() => setSimAddress(u.address)}
-                      style={{ background: isSelected ? C.highlight : undefined, cursor: "pointer" }}
+                      style={{ background: isSelected ? (u.address === NEW_WALLET ? "#261e10" : C.highlight) : undefined, cursor: "pointer" }}
                       onMouseEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLTableRowElement).style.background = C.highlightRow; }}
                       onMouseLeave={(e) => { if (!isSelected) (e.currentTarget as HTMLTableRowElement).style.background = ""; }}
                     >
@@ -743,7 +743,7 @@ function App() {
               <div style={{ color: C.accent, fontWeight: "bold", fontSize: 14 }}>{T.helpTitle}</div>
               <button style={{ ...btnStyle, padding: "3px 10px", fontSize: 12 }} onClick={() => setShowHelp(false)}>{T.btnClose}</button>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 16, color: C.text, fontSize: 12, lineHeight: 1.6 }}>
+            <div className="modal-table-wrap" style={{ display: "flex", flexDirection: "column", gap: 16, color: C.text, fontSize: 12, lineHeight: 1.6 }}>
 
               <section>
                 <div style={{ color: C.textBright, fontWeight: "bold", marginBottom: 4 }}>{T.helpVeGNETTitle}</div>

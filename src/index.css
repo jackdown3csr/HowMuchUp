@@ -12,6 +12,26 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
+/* ── Scrollbars ── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3a3a3a transparent;
+}
+*::-webkit-scrollbar { width: 6px; height: 6px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: #3a3a3a; border-radius: 3px; }
+*::-webkit-scrollbar-thumb:hover { background: #555; }
+*::-webkit-scrollbar-corner { background: transparent; }
+
+/* ── Keyboard focus ring ── */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+a:focus-visible {
+  outline: 2px solid #4af;
+  outline-offset: 2px;
+}
+
 @keyframes pulse-bar {
   0%   { transform: scaleX(0.15); opacity: 0.5; }
   50%  { transform: scaleX(0.75); opacity: 1; }
@@ -64,6 +84,7 @@ input[type="number"] {
   top: 12px;
   max-height: calc(100vh - 24px);
   overflow-y: auto;
+  z-index: 10;
 }
 
 .stats-grid {
@@ -95,12 +116,7 @@ input[type="number"] {
     background: #0e0e0e;
     max-height: calc(100vh - 8px);
     overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: #3a3a3a transparent;
   }
-  .sim-col::-webkit-scrollbar { width: 4px; }
-  .sim-col::-webkit-scrollbar-track { background: transparent; }
-  .sim-col::-webkit-scrollbar-thumb { background: #3a3a3a; border-radius: 2px; }
   .lb-col {
     order: 2;
     max-width: 100%;

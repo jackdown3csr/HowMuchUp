@@ -1,7 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
-	<rect x="6" y="6" width="52" height="52" rx="14" fill="#11161C"/>
-	<rect x="6.75" y="6.75" width="50.5" height="50.5" rx="13.25" stroke="#2A2F38" stroke-width="1.5"/>
-	<path d="M18 43L30 31L38 39L47 20" stroke="#4AAFFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-	<path d="M38 20H47V29" stroke="#4AAFFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-	<circle cx="47" cy="20" r="3.5" fill="#EAF6FF"/>
+  <defs>
+    <linearGradient id="lineGrad" x1="12" y1="46" x2="52" y2="14" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#44aaff"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- Background -->
+  <rect x="4" y="4" width="56" height="56" rx="13" fill="#0a1220"/>
+  <rect x="4.75" y="4.75" width="54.5" height="54.5" rx="12.25" stroke="#1e2e48" stroke-width="1.5"/>
+  <!-- Chart line with gradient -->
+  <path d="M11 46 L23 36 L31 42 L52 14"
+        stroke="url(#lineGrad)" stroke-width="4.5"
+        stroke-linecap="round" stroke-linejoin="round"
+        filter="url(#glow)"/>
+  <!-- Peak dot glow -->
+  <circle cx="52" cy="14" r="6" fill="#a855f7" opacity="0.25"/>
+  <circle cx="52" cy="14" r="3.5" fill="#c080ff"/>
+  <!-- Baseline grid line (subtle) -->
+  <line x1="11" y1="51" x2="53" y2="51" stroke="#1e2e48" stroke-width="1" stroke-dasharray="3 3"/>
 </svg>

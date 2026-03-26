@@ -41,13 +41,13 @@
 
   <!-- outer halo -->
   <path d="M107.5 215 L137.5 190 L157.5 205 L210 135"
-        stroke="#3388ff" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" opacity="0.06"/>
+        fill="none" stroke="#3388ff" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" opacity="0.06"/>
   <!-- mid glow -->
   <path d="M107.5 215 L137.5 190 L157.5 205 L210 135"
-        stroke="#7755ee" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" opacity="0.09"/>
+        fill="none" stroke="#7755ee" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" opacity="0.09"/>
   <!-- crisp line -->
   <path d="M107.5 215 L137.5 190 L157.5 205 L210 135"
-        stroke="url(#logoGrad)" stroke-width="8"
+        fill="none" stroke="url(#logoGrad)" stroke-width="8"
         stroke-linecap="round" stroke-linejoin="round"
         filter="url(#lGlow)"/>
 

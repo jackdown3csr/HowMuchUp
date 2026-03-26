@@ -658,8 +658,8 @@ function App() {
                           </a>
                         )}
                       </td>
-                      <td style={tdRight} className="col-hide-mobile">{formatNumber(u.soulScore, 0)}</td>
-                      <td style={tdRight} className="col-hide-mobile">{formatNumber(u.lockedGNET)}</td>
+                      <td style={tdRight} className="col-hide-mobile">{formatNumber(simResult && isSelected ? simResult.simSoulScore : u.soulScore, 0)}</td>
+                      <td style={tdRight} className="col-hide-mobile">{formatNumber(simResult && isSelected ? simResult.simLockedGNET : u.lockedGNET)}</td>
                       <td style={tdRight} className="col-hide-mobile">{formatNumber(simResult && isSelected ? simResult.simVeGNET : u.veGNET)}</td>
                       <td style={tdRight}>{formatNumber(u.reputation)}</td>
                       <td style={tdRight}>{formatNumber(u.monthlyReward)}</td>

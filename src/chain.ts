@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { RPC_URL, CONTRACTS, VOTING_ESCROW_ABI, ERC20_ABI } from "./constants";
+import { RPC_URL, CONTRACTS, VOTING_ESCROW_ABI, ERC20_ABI, GUBI_PROTOCOL_ADDRESSES } from "./constants";
 
 let _provider: ethers.JsonRpcProvider | null = null;
 
@@ -71,4 +71,42 @@ export async function readGubiTotalSupply(): Promise<number> {
   const c = getGubiTokenContract();
   const val: bigint = await c.totalSupply();
   return Number(ethers.formatEther(val));
+}
+
+const TRANSFER_SIG = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+const ZERO_TOPIC   = "0x" + "0".repeat(64);
+
+export interface GubiBurnStats {
+  totalBurned: number;
+  burnEvents: number;
+  uniqueBurners: number;
+}
+
+export async function readGubiBurnStats(): Promise<GubiBurnStats> {
+  const provider = getProvider();
+  const block = await provider.getBlockNumber();
+
+  const logs = await provider.getLogs({
+    address:   CONTRACTS.gubiToken,
+    topics:    [TRANSFER_SIG, null, ZERO_TOPIC],
+    fromBlock: 0,
+    toBlock:   block,
+  });
+
+  let totalBurned = 0n;
+  const burners = new Set<string>();
+
+  for (const log of logs) {
+    const from = ("0x" + log.topics[1]!.slice(26)).toLowerCase();
+    totalBurned += BigInt(log.data);
+    if (!GUBI_PROTOCOL_ADDRESSES.has(from)) {
+      burners.add(from);
+    }
+  }
+
+  return {
+    totalBurned:   Number(ethers.formatEther(totalBurned)),
+    burnEvents:    logs.length,
+    uniqueBurners: burners.size,
+  };
 }

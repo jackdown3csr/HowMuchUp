@@ -26,7 +26,8 @@ export interface UserData {
 
 export interface StatsData {
   totalReputation: number;
-  totalMonthlyEmission: number;
+  totalMonthlyEmission: string;
+  dailyDistribution: string;
   emissionPerRepPoint: number;
   totalUsers: number;
 }

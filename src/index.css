@@ -88,9 +88,13 @@ a:focus-visible {
 }
 
 .stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 8px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  align-items: baseline;
+}
+.stats-grid > span {
+  white-space: nowrap;
 }
 
 /* ── Leaderboard scroll wrapper ── */
@@ -101,6 +105,9 @@ a:focus-visible {
 
 /* Toggle button — hidden on desktop, shown on mobile */
 .show-cols-btn { display: none; }
+
+/* Snapshot: full on desktop, date-only on mobile */
+.snapshot-short { display: none; }
 
 /* ── Mobile ── */
 @media (max-width: 900px) {
@@ -184,9 +191,11 @@ a:focus-visible {
   .slider-hint   { display: none; }
 
   .stats-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 8px 12px;
+    gap: 4px 10px;
+    font-size: 11px;
   }
+  .snapshot-full  { display: none; }
+  .snapshot-short { display: inline; }
 
   /* Smaller table font */
   table { font-size: 11px; }

@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import type { EnrichedUser, PoolData, StatsData, SimulationResult } from "./types";
 import { fetchAllLeaderboard, fetchUsersInBatches, fetchStats, fetchPool } from "./api";
-import { readLockDataBatch, readMaxTime, readGubiTotalSupply, getCurrentBlock } from "./chain";
+import { readLockDataBatch, readMaxTime, readGubiTotalSupply, getCurrentBlock, readGubiBurnStats } from "./chain";
+import type { GubiBurnStats } from "./chain";
 import { shortAddr, formatNumber, formatDate, calcReputation } from "./utils";
 import { MONTHLY_EMISSION, INFLOW_SCHEDULE } from "./constants";
 import { simulate } from "./simulation";
@@ -103,6 +104,7 @@ function App() {
   const [stats, setStats] = useState<StatsData | null>(null);
   const [pool, setPool] = useState<PoolData | null>(null);
   const [gubiSupply, setGubiSupply] = useState<number>(0);
+  const [burnStats, setBurnStats] = useState<GubiBurnStats | null>(null);
   const [snapshotBlock, setSnapshotBlock] = useState<number>(0);
   const [snapshotTs, setSnapshotTs] = useState<number>(0);
   const [loading, setLoading] = useState(true);
@@ -211,6 +213,9 @@ function App() {
 
       setUsers(enriched);
       setLoadProgress("");
+
+      // Lazy non-blocking: fetch burn stats after main load
+      readGubiBurnStats().then(setBurnStats).catch(() => {});
     } catch (e) {
       setError(String(e));
     } finally {
@@ -376,11 +381,11 @@ function App() {
         {lang === "fr" ? (
           <>◈ Vous prévoyez de brûler des gUBI ? Utilisez{" "}
           <a href="https://flambeur.xyz" target="_blank" rel="noopener noreferrer" style={{ color: C.accent, textDecoration: "none", fontWeight: "bold" }}>flambeur.xyz ↗</a>
-            {" "}— obtenez des WGNET avec 30 % de bonus pour tous vos gUBI, ARCHAI inclus.</>
+            {" "}— obtenez des WGNET avec 30 % de bonus pour tous vos gUBI, ARCHAI inclus. EPOCH 0 ending today.</>
         ) : (
           <>◈ Have gUBI to burn? Use{" "}
           <a href="https://flambeur.xyz" target="_blank" rel="noopener noreferrer" style={{ color: C.accent, textDecoration: "none", fontWeight: "bold" }}>flambeur.xyz ↗</a>
-            {" "}instead — get WGNET for your full gUBI balance, including ARCHAI, with a 30% bonus.</>
+            {" "}instead — get WGNET for your full gUBI balance, including ARCHAI, with a 30% bonus. EPOCH 0 ending today.</>
         )}
       </div>
 
@@ -443,15 +448,34 @@ function App() {
           </div>
           {showStats && (
             <div className="stats-grid" style={{ marginTop: 10 }}>
+              {/* — Leaderboard — */}
               <span>{label(T.statUsers)} <b style={{ color: C.textBright }}>{stats.totalUsers}</b></span>
               <span>{label(T.statTotalRep)} <b style={{ color: C.textBright }}>{formatNumber(stats.totalReputation, 0)}</b></span>
-              <span>{label(T.statEmission)} <b style={{ color: C.textBright }}>{formatNumber(MONTHLY_EMISSION, 0)}</b> {T.gubiPerMonth}</span>
+              <span>{label(T.statEmission)} <b style={{ color: C.textBright }}>{formatNumber(Number(stats.totalMonthlyEmission), 0)}</b> {T.gubiPerMonth}</span>
+              <span>{label(T.statDailyDistribution)} <b style={{ color: C.textBright }}>{formatNumber(Number(stats.dailyDistribution), 0)}</b> gUBI/day</span>
+
+              {/* — Pool / token — */}
+              <span style={{ flex: "0 0 100%", borderTop: `1px solid ${C.border}`, margin: "4px 0 0" }} />
               <span>{label(T.statPool)} <b style={{ color: C.textBright }}>${formatNumber(pool.totalWorthUSD)}</b></span>
-              <span>{label(T.statGubiPrice)} <b style={{ color: C.textBright }}>${formatNumber(pool.gubiPrice, 6)}</b></span>
+              <span>{label(T.statGubiPrice)} <b style={{ color: C.textBright }}>${formatNumber(pool.gubiPrice, 4)}</b></span>
               <span>{label(T.statGubiSupply)} <b style={{ color: C.textBright }}>{formatNumber(gubiSupply, 0)}</b></span>
-              <span>{label(T.statBacking)} <b style={{ color: C.textBright }}>${gubiSupply > 0 ? formatNumber(pool.totalWorthUSD / gubiSupply, 6) : "—"}</b></span>
+              <span>{label(T.statBacking)} <b style={{ color: C.textBright }}>${gubiSupply > 0 ? formatNumber(pool.totalWorthUSD / gubiSupply, 4) : "—"}</b></span>
+
+              {/* — Burns — */}
+              <span style={{ flex: "0 0 100%", borderTop: `1px solid ${C.border}`, margin: "4px 0 0" }} />
+              {burnStats ? <>
+                <span>{label(T.statTotalBurned)} <b style={{ color: C.red }}>{formatNumber(burnStats.totalBurned, 0)}</b></span>
+                <span>{label(T.statBurnEvents)} <b style={{ color: C.textBright }}>{burnStats.burnEvents}</b></span>
+                <span>{label(T.statBurners)} <b style={{ color: C.textBright }}>{burnStats.uniqueBurners}</b></span>
+              </> : <span style={{ color: C.textDim, fontSize: 11 }}>loading…</span>}
+
+              {/* — Snapshot — */}
+              {(snapshotBlock > 0 || snapshotTs > 0) && (
+                <span style={{ flex: "0 0 100%", borderTop: `1px solid ${C.border}`, margin: "4px 0 0" }} />
+              )}
               {snapshotBlock > 0 && <span>{label(T.statBlock)} <b style={{ color: C.textBright }}>{snapshotBlock}</b></span>}
-              {snapshotTs > 0 && <span>{label(T.statSnapshot)} {new Date(snapshotTs * 1000).toISOString().replace("T", " ").slice(0, 19)} UTC</span>}
+              {snapshotTs > 0 && <span className="snapshot-full">{label(T.statSnapshot)} {new Date(snapshotTs * 1000).toISOString().slice(0, 16).replace("T", " ")} UTC</span>}
+              {snapshotTs > 0 && <span className="snapshot-short">{label(T.statSnapshot)} {new Date(snapshotTs * 1000).toISOString().slice(11, 16)} UTC</span>}
             </div>
           )}
         </div>

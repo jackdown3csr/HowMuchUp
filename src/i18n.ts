@@ -30,6 +30,7 @@ interface Translations {
   statUsers: string;
   statTotalRep: string;
   statEmission: string;
+  statDailyDistribution: string;
   statPool: string;
   statGubiPrice: string;
   statGubiSupply: string;
@@ -37,6 +38,9 @@ interface Translations {
   statBlock: string;
   statSnapshot: string;
   gubiPerMonth: string;
+  statTotalBurned: string;
+  statBurnEvents: string;
+  statBurners: string;
 
   // Simulator
   simTitle: string;
@@ -209,6 +213,7 @@ export const translations: Record<Lang, Translations> = {
     statUsers: "users",
     statTotalRep: "total rep",
     statEmission: "emission",
+    statDailyDistribution: "daily dist.",
     statPool: "pool",
     statGubiPrice: "gUBI price",
     statGubiSupply: "gUBI supply",
@@ -216,6 +221,9 @@ export const translations: Record<Lang, Translations> = {
     statBlock: "block",
     statSnapshot: "snapshot",
     gubiPerMonth: "gUBI/mo",
+    statTotalBurned: "total burned",
+    statBurnEvents: "burn txs",
+    statBurners: "burner wallets",
 
     simTitle: "Simulator",
     lblAddress: "address",
@@ -379,6 +387,7 @@ export const translations: Record<Lang, Translations> = {
     statUsers: "utilisateurs",
     statTotalRep: "rép. totale",
     statEmission: "émission",
+    statDailyDistribution: "dist. quotidienne",
     statPool: "pool",
     statGubiPrice: "prix gUBI",
     statGubiSupply: "offre gUBI",
@@ -386,6 +395,9 @@ export const translations: Record<Lang, Translations> = {
     statBlock: "bloc",
     statSnapshot: "instantané",
     gubiPerMonth: "gUBI/mois",
+    statTotalBurned: "total brûlés",
+    statBurnEvents: "txs de burn",
+    statBurners: "wallets brûleurs",
 
     simTitle: "Simulateur",
     lblAddress: "adresse",

@@ -25,3 +25,4 @@ public/og-image.png
 *.njsproj
 *.sln
 *.sw?
+.mcp_data/

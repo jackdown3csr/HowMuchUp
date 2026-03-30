@@ -65,15 +65,26 @@ function clamp(val: number, min: number, max: number): number {
 /**
  * Pure math projection engine.
  * Mirrors real VotingEscrow: one lock per address.
- * Weekly ticks. gUBI earned each month = sum of 4 weekly slices (MONTHLY_EMISSION/4 each).
+ * Weekly ticks (7-day steps). Month boundaries are placed at real calendar positions
+ * (365.25/12/7 ≈ 4.348 weeks/month) so both the time horizon and per-week emission
+ * are calibrated to actual calendar months, not the 4-weeks-per-month approximation.
  *
  * Pool competition = exact per-user veGNET decay simulation (using real lockEnd from chain)
  * + an optional extra-growth term on top (poolGrowthPctPerMonth) representing new entrants
  * and re-lockers. poolGrowthPctPerMonth = 0 → pure deterministic decay (pessimistic floor).
  */
 export function projectGUBI(p: LabParams): ProjectionPoint[] {
-  const totalWeeks = p.horizonMonths * 4;
+  const WEEKS_PER_MONTH = 365.25 / 12 / 7; // ≈ 4.348 — real calendar weeks per month
+  const totalWeeks = Math.round(p.horizonMonths * WEEKS_PER_MONTH);
   const SECONDS_PER_WEEK = 7 * 86400;
+
+  // Pre-compute the week number at which each calendar month ends.
+  // Months have unequal week counts (4 or 5) so this drives the emit trigger instead of week % 4.
+  const monthEndWeek = Array.from(
+    { length: p.horizonMonths },
+    (_, i) => Math.round((i + 1) * WEEKS_PER_MONTH),
+  );
+  let nextMonthIdx = 0;
 
   // Validate / normalise starting state
   let lockedGNET = Math.max(0, p.startLockedGNET);
@@ -107,12 +118,12 @@ export function projectGUBI(p: LabParams): ProjectionPoint[] {
   const growthPess    = (p.poolGrowthPctPerMonth + p.spreadPct) / 100; // more activity → worse for user
   const growthOpt     = (p.poolGrowthPctPerMonth - p.spreadPct) / 100; // less activity → better (can be negative)
 
-  // Weekly emission slice
-  const WEEKLY_EMISSION = MONTHLY_EMISSION / 4;
+  // Weekly emission calibrated to real calendar: 52.18 weeks/year → correct annual total.
+  const WEEKLY_EMISSION = MONTHLY_EMISSION / WEEKS_PER_MONTH;
 
   const results: ProjectionPoint[] = [];
 
-  // Accumulators for the current 4-week block
+  // Accumulators reset at each calendar month boundary
   let acc_pess = 0, acc_neutral = 0, acc_opt = 0;
 
   // Emit the week-0 "Now" snapshot.
@@ -137,12 +148,18 @@ export function projectGUBI(p: LabParams): ProjectionPoint[] {
   }
 
   for (let week = 1; week <= totalWeeks; week++) {
-    // --- Contributions & lock extensions (before computing this week's metrics) ---
+    // --- Advance time first so week-N metrics reflect N weeks of decay ---
+    daysLeft = Math.max(0, daysLeft - 7);
+    if (daysLeft === 0 && p.relockExpired && lockedGNET > 0) {
+      daysLeft = relockDays;
+    }
+
+    // --- Contributions & lock extensions ---
     if (p.addFrequencyWeeks > 0 && week % p.addFrequencyWeeks === 0) {
       if (p.addGNET > 0) {
         lockedGNET += p.addGNET;
       }
-      if (p.extendOnAdd && p.addGNET > 0) {
+      if (p.extendOnAdd) {
         const newDays = clamp(relockDays, daysLeft, 730);
         daysLeft = Math.max(daysLeft, newDays);
       }
@@ -154,7 +171,7 @@ export function projectGUBI(p: LabParams): ProjectionPoint[] {
 
     // Pool competition = exact decay + extra growth from new entrants / re-lockers.
     // Extra uses fractional month so within-month pool evolution is captured.
-    const fractionalMonth = week / 4;
+    const fractionalMonth = week / WEEKS_PER_MONTH;
     const extra_neutral = initialOtherRep * (Math.pow(1 + growthNeutral, fractionalMonth) - 1);
     const extra_pess    = initialOtherRep * (Math.pow(1 + growthPess,    fractionalMonth) - 1);
     const extra_opt     = initialOtherRep * (Math.pow(1 + growthOpt,     fractionalMonth) - 1);
@@ -170,15 +187,10 @@ export function projectGUBI(p: LabParams): ProjectionPoint[] {
     acc_neutral += poolRep_neutral > 0 ? (reputation / poolRep_neutral) * WEEKLY_EMISSION : 0;
     acc_opt     += poolRep_opt     > 0 ? (reputation / poolRep_opt)     * WEEKLY_EMISSION : 0;
 
-    // --- Advance time ---
-    daysLeft = Math.max(0, daysLeft - 7);
-    if (daysLeft === 0 && p.relockExpired && lockedGNET > 0) {
-      daysLeft = relockDays;
-    }
-
-    // Emit one data point per 4-week block
-    if (week % 4 === 0) {
-      const month = Math.round(week / 4);
+    // Emit one data point at each calendar month boundary
+    if (nextMonthIdx < monthEndWeek.length && week === monthEndWeek[nextMonthIdx]) {
+      const month = nextMonthIdx + 1;
+      nextMonthIdx++;
       const share_pess    = poolRep_pess    > 0 ? reputation / poolRep_pess    : 0;
       const share_neutral = poolRep_neutral > 0 ? reputation / poolRep_neutral : 0;
       const share_opt     = poolRep_opt     > 0 ? reputation / poolRep_opt     : 0;

@@ -2,7 +2,7 @@
   "name": "howmuchup",
   "private": true,
   "version": "0.1.0",
-  "description": "Galactica gUBI rank and reward simulator with block-pinned on-chain reads.",
+  "description": "Estimate Galactica leaderboard rank and monthly gUBI rewards.",
   "type": "module",
   "keywords": [
     "galactica",

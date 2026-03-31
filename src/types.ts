@@ -62,6 +62,7 @@ export interface EnrichedUser {
 }
 
 export interface SimulationResult {
+  hasChanges: boolean;
   currentLockedGNET: number;
   currentVeGNET: number;
   currentDaysLeft: number;

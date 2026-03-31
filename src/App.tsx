@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import type { EnrichedUser, PoolData, StatsData, SimulationResult } from "./types";
 import { fetchAllLeaderboard, fetchUsersInBatches, fetchStats, fetchPool } from "./api";
-import { readLockDataBatch, readMaxTime, readGubiTotalSupply, getCurrentBlock, readGubiBurnStats } from "./chain";
-import type { GubiBurnStats } from "./chain";
+import { readLockDataBatch, readMaxTime, readGubiTotalSupply, getCurrentBlock, readGubiBurnStats, readGubiHolders } from "./chain";
+import type { GubiBurnStats, GubiHolder } from "./chain";
 import { shortAddr, formatNumber, formatDate, calcReputation } from "./utils";
 import { MONTHLY_EMISSION, INFLOW_SCHEDULE } from "./constants";
 import { simulate } from "./simulation";
@@ -105,6 +105,9 @@ function App() {
   const [pool, setPool] = useState<PoolData | null>(null);
   const [gubiSupply, setGubiSupply] = useState<number>(0);
   const [burnStats, setBurnStats] = useState<GubiBurnStats | null>(null);
+  const [holders, setHolders] = useState<GubiHolder[] | null>(null);
+  const [holdersLoading, setHoldersLoading] = useState(false);
+  const [showHolders, setShowHolders] = useState(false);
   const [snapshotBlock, setSnapshotBlock] = useState<number>(0);
   const [snapshotTs, setSnapshotTs] = useState<number>(0);
   const [loading, setLoading] = useState(true);
@@ -293,15 +296,16 @@ function App() {
   const poolProjection = computePoolProjection(pool, gubiSupply);
   const label = (s: string) => <span style={{ color: C.textDim, marginRight: 6, userSelect: "none" }}>{s}</span>;
   const deltaColor = (n: number) => n > 0 ? C.green : n < 0 ? C.red : C.text;
+  const hasSimulationChanges = !!simResult?.hasChanges;
 
   useEffect(() => {
-    if (!showPool) return;
+    if (!showPool && !showHolders) return;
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setShowPool(false);
+      if (e.key === "Escape") { setShowPool(false); setShowHolders(false); }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [showPool]);
+  }, [showPool, showHolders]);
 
   useEffect(() => {
     if (!showHelp) return;
@@ -399,6 +403,15 @@ function App() {
           <button style={{ ...btnStyle, fontSize: 12, padding: "3px 10px" }} onClick={() => loadData()} disabled={loading} title={T.titleRefresh}>
             {T.btnRefresh}
           </button>
+          <button style={{ ...btnStyle, fontSize: 12, padding: "3px 10px", borderColor: showHolders ? C.accent : C.borderAccent, color: showHolders ? C.accent : C.textDim }} onClick={() => {
+              setShowHolders(v => !v);
+              if (!holders && !holdersLoading) {
+                setHoldersLoading(true);
+                readGubiHolders().then(h => { setHolders(h); setHoldersLoading(false); }).catch(() => setHoldersLoading(false));
+              }
+            }}>
+            {holdersLoading ? "loading…" : T.btnHolders}
+          </button>
           <button style={{ ...btnStyle, fontSize: 12, padding: "3px 10px", borderColor: C.borderAccent, color: C.textDim }} onClick={() => setShowPool(v => !v)} title={T.titlePool}>
             {showPool ? T.btnClosePool : T.btnPoolProjection}
           </button>
@@ -490,38 +503,27 @@ function App() {
         <div className="sim-col">
         <div className="sim-card" style={card}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-            <div style={{ color: C.accent, fontWeight: "bold" }}>{T.simTitle}</div>
-            {(additionalGNET !== 0 || extensionDays !== 0 || extraSoul !== 0) && (
-              <button style={{ ...btnStyle, fontSize: 11, padding: "2px 8px", borderColor: C.borderAccent, color: C.textDim }}
-                onClick={() => { setAdditionalGNET(0); setExtensionDays(0); setExtraSoul(0); }}>
-                {T.btnReset}
-              </button>
-            )}
-          </div>
-          {/* Address selection row */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
-            <label className="sim-addr-row" style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              {label(T.lblAddress)}
-              <input style={{ ...inputStyle, flex: 1, minWidth: 0 }} type="text"
-                value={simAddress === NEW_WALLET ? "" : simAddress}
-                onChange={(e) => setSimAddress(e.target.value)} placeholder={T.placeholderAddress} />
+            <div>
+              <span style={{ color: C.accent, fontWeight: "bold" }}>{T.simTitle}</span>
+              {simAddress && simAddress !== NEW_WALLET && (
+                <span style={{ color: C.textDim, fontSize: 11, marginLeft: 8 }}>{shortAddr(simAddress)}</span>
+              )}
+              {simAddress === NEW_WALLET && (
+                <span style={{ color: C.textDim, fontSize: 11, marginLeft: 8 }}>{T.newWalletLabel}</span>
+              )}
+            </div>
+            <div style={{ display: "flex", gap: 6 }}>
               <button
                 style={{ ...btnStyle, fontSize: 11, padding: "2px 8px", borderColor: simAddress === NEW_WALLET ? C.accent : C.borderAccent, color: simAddress === NEW_WALLET ? C.accent : C.textDim, whiteSpace: "nowrap" }}
                 onClick={() => setSimAddress(simAddress === NEW_WALLET ? "" : NEW_WALLET)}
-                title={T.btnNewWallet}
               >{T.btnNewWallet}</button>
-            </label>
-            <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              {label(T.lblOrPick)}
-              <select style={{ ...inputStyle, flex: 1, minWidth: 0 }} value={simAddress === NEW_WALLET ? "" : simAddress} onChange={(e) => setSimAddress(e.target.value)}>
-                <option value="">{T.placeholderSelect}</option>
-                {users.map((u) => (
-                  <option key={u.address} value={u.address}>
-                    #{u.rank} {shortAddr(u.address)} · {formatNumber(u.reputation, 0)} rep
-                  </option>
-                ))}
-              </select>
-            </label>
+              {(additionalGNET !== 0 || extensionDays !== 0 || extraSoul !== 0) && (
+                <button style={{ ...btnStyle, fontSize: 11, padding: "2px 8px", borderColor: C.borderAccent, color: C.textDim }}
+                  onClick={() => { setAdditionalGNET(0); setExtensionDays(0); setExtraSoul(0); }}>
+                  {T.btnReset}
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Sliders */}
@@ -581,7 +583,7 @@ function App() {
                 <tr>
                   <th style={th}>{T.colMetric}</th>
                   <th style={th}>{T.colCurrent}</th>
-                  <th style={th}>{T.colSimulated}</th>
+                  <th style={th}>{hasSimulationChanges ? T.colSimulated : T.colResult}</th>
                   <th style={th}>{T.colDelta}</th>
                 </tr>
               </thead>
@@ -634,7 +636,7 @@ function App() {
                 {showAllCols ? T.btnHideCols : T.btnShowCols}
               </button>
             </div>
-            {simResult && <div style={{ color: C.orange, fontSize: 11, fontWeight: "normal", marginTop: 2 }}>{T.lbSimNotice} {simAddress === NEW_WALLET ? T.newWalletLabel : shortAddr(simAddress)}</div>}
+            {simResult && <div style={{ color: hasSimulationChanges ? C.orange : C.textDim, fontSize: 11, fontWeight: "normal", marginTop: 2 }}>{hasSimulationChanges ? T.lbSimNotice : T.lbRankNotice} {simAddress === NEW_WALLET ? T.newWalletLabel : shortAddr(simAddress)}</div>}
           </div>
           <div className={`lb-table-scroll ${showAllCols ? "show-all-cols" : ""}`}>
             <table style={{ borderCollapse: "collapse", width: "100%" }}>
@@ -699,7 +701,7 @@ function App() {
               {simAddress && !showAllUsers && (() => {
                 const selIdx = displayUsers.findIndex((u) => u.address.toLowerCase() === simAddress.toLowerCase());
                 return selIdx >= TOP_N ? (
-                  <span style={{ color: C.textDim, fontSize: 11 }}>{T.yourSimRank(displayUsers[selIdx].rank)}</span>
+                  <span style={{ color: C.textDim, fontSize: 11 }}>{hasSimulationChanges ? T.yourSimRank(displayUsers[selIdx].rank) : T.yourRank(displayUsers[selIdx].rank)}</span>
                 ) : null;
               })()}
               <button
@@ -754,6 +756,46 @@ function App() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Holders Modal */}
+      {showHolders && (
+        <div className="modal-backdrop" onClick={() => setShowHolders(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
+              <div>
+                <div style={{ color: C.accent, fontWeight: "bold", marginBottom: 4 }}>{T.holdersTitle}</div>
+                <div style={{ color: C.textDim, fontSize: 12 }}>{T.holdersDesc}</div>
+              </div>
+              <button style={{ ...btnStyle, padding: "3px 10px", fontSize: 12 }} onClick={() => setShowHolders(false)}>
+                {T.btnClose}
+              </button>
+            </div>
+            <div className="modal-table-wrap">
+              {holdersLoading && <div style={{ color: C.textDim, fontSize: 12, padding: "12px 0" }}>⏳ loading…</div>}
+              {holders && (
+                <table style={{ borderCollapse: "collapse", width: "100%" }}>
+                  <thead>
+                    <tr>
+                      <th style={th}>{T.holdersColRank}</th>
+                      <th style={th}>{T.holdersColAddress}</th>
+                      <th style={{ ...th, textAlign: "right" }}>{T.holdersColBalance}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {holders.map((h, i) => (
+                      <tr key={h.address}>
+                        <td style={td}>{i + 1}</td>
+                        <td style={td}>{shortAddr(h.address)}</td>
+                        <td style={tdRight}>{formatNumber(h.balance, 2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         </div>

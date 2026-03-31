@@ -44,10 +44,6 @@ interface Translations {
 
   // Simulator
   simTitle: string;
-  lblAddress: string;
-  lblOrPick: string;
-  placeholderAddress: string;
-  placeholderSelect: string;
   addrNotFound: string;
   btnNewWallet: string;
   newWalletLabel: string;
@@ -61,6 +57,7 @@ interface Translations {
   // Result table
   colMetric: string;
   colCurrent: string;
+  colResult: string;
   colSimulated: string;
   colDelta: string;
   rowSoulScore: string;
@@ -73,6 +70,7 @@ interface Translations {
 
   // Leaderboard
   lbTitle: string;
+  lbRankNotice: string;
   lbSimNotice: string;
   colHash: string;
   colAddress: string;
@@ -89,7 +87,16 @@ interface Translations {
   btnHideCols: string;
   btnReset: string;
   simEmptyHint: string;
+  yourRank: (rank: number) => string;
   yourSimRank: (rank: number) => string;
+
+  // Holders modal
+  btnHolders: string;
+  holdersTitle: string;
+  holdersDesc: string;
+  holdersColRank: string;
+  holdersColAddress: string;
+  holdersColBalance: string;
 
   // Pool modal
   poolTitle: string;
@@ -226,10 +233,6 @@ export const translations: Record<Lang, Translations> = {
     statBurners: "burner wallets",
 
     simTitle: "Simulator",
-    lblAddress: "address",
-    lblOrPick: "or pick",
-    placeholderAddress: "0x...",
-    placeholderSelect: "— select —",
     addrNotFound: "Address not found in leaderboard.",
     btnNewWallet: "New wallet",
     newWalletLabel: "new wallet",
@@ -241,6 +244,7 @@ export const translations: Record<Lang, Translations> = {
 
     colMetric: "Metric",
     colCurrent: "Current",
+    colResult: "Result",
     colSimulated: "Simulated",
     colDelta: "Delta",
     rowSoulScore: "SoulScore",
@@ -252,6 +256,7 @@ export const translations: Record<Lang, Translations> = {
     rowMonthlyGubi: "Monthly gUBI",
 
     lbTitle: "Leaderboard",
+    lbRankNotice: "ranking for",
     lbSimNotice: "⚡ simulated ranking for",
     colHash: "#",
     colAddress: "Address",
@@ -268,7 +273,15 @@ export const translations: Record<Lang, Translations> = {
     btnHideCols: "◄ Fewer columns",
     btnReset: "Reset",
     simEmptyHint: "← click a row in the leaderboard to simulate",
+    yourRank: (rank) => `your rank: #${rank}`,
     yourSimRank: (rank) => `your simulated rank: #${rank}`,
+
+    btnHolders: "gUBI Holders ↗",
+    holdersTitle: "gUBI Holders",
+    holdersDesc: "All addresses holding gUBI, excluding protocol addresses.",
+    holdersColRank: "#",
+    holdersColAddress: "Address",
+    holdersColBalance: "Balance",
 
     poolTitle: "Pool Backing Projection",
     poolDesc: "Projected backing as scheduled GNET unlocks enter the pool over time.",
@@ -294,7 +307,7 @@ export const translations: Record<Lang, Translations> = {
     helpSliderDaysDesc: "— extends your lock duration (capped at 730 days total). Uses MAX to fill to the cap.",
     helpSliderSoulDesc: "— hypothetical future credential gains. Real SoulScore can only increase on-chain.",
     helpSourcesTitle: "Data sources",
-    helpSourcesBody: "Leaderboard and user stats: Galactica Admin API. Lock data (lockedGNET, lockEnd, veGNET) and gUBI supply: on-chain at block snapshot. All data refreshes on every page load or manual ↺ Refresh.",
+    helpSourcesBody: "Leaderboard and user stats: Galactica Admin API. Lock data (lockedGNET, lockEnd, veGNET) and gUBI supply: on-chain at block snapshot. Burn stats (total burned, burn txs, burner wallets) and gUBI holders: fetched on-demand from Transfer event logs. All data refreshes on every page load or manual ↺ Refresh.",
 
     labTitle: "⚗ Lab — gUBI Projection",
     labDisclaimer: "⚗ Experimental — purely mathematical projection. Not a forecast. Pool competition is unpredictable.",
@@ -400,10 +413,6 @@ export const translations: Record<Lang, Translations> = {
     statBurners: "wallets brûleurs",
 
     simTitle: "Simulateur",
-    lblAddress: "adresse",
-    lblOrPick: "ou choisir",
-    placeholderAddress: "0x...",
-    placeholderSelect: "— choisir —",
     addrNotFound: "Adresse introuvable dans le classement.",
     btnNewWallet: "Nouvelle adresse",
     newWalletLabel: "nouvelle adresse",
@@ -415,6 +424,7 @@ export const translations: Record<Lang, Translations> = {
 
     colMetric: "Métrique",
     colCurrent: "Actuel",
+    colResult: "Résultat",
     colSimulated: "Simulé",
     colDelta: "Delta",
     rowSoulScore: "SoulScore",
@@ -426,6 +436,7 @@ export const translations: Record<Lang, Translations> = {
     rowMonthlyGubi: "gUBI mensuel",
 
     lbTitle: "Classement",
+    lbRankNotice: "classement pour",
     lbSimNotice: "⚡ classement simulé pour",
     colHash: "#",
     colAddress: "Adresse",
@@ -442,7 +453,15 @@ export const translations: Record<Lang, Translations> = {
     btnHideCols: "◄ Moins de colonnes",
     btnReset: "Réinitialiser",
     simEmptyHint: "← cliquez sur une ligne du classement pour simuler",
+    yourRank: (rank) => `votre rang : #${rank}`,
     yourSimRank: (rank) => `votre rang simulé : #${rank}`,
+
+    btnHolders: "gUBI Holders ↗",
+    holdersTitle: "Détenteurs gUBI",
+    holdersDesc: "Toutes les adresses détenant des gUBI, hors adresses protocole.",
+    holdersColRank: "#",
+    holdersColAddress: "Adresse",
+    holdersColBalance: "Solde",
 
     poolTitle: "Projection de couverture du pool",
     poolDesc: "Couverture projetée au fur et à mesure que les déblocages de GNET entrent dans le pool.",
@@ -468,7 +487,7 @@ export const translations: Record<Lang, Translations> = {
     helpSliderDaysDesc: "— prolonge la durée de votre verrou (plafonné à 730 jours au total). Utilisez MAX pour atteindre le plafond.",
     helpSliderSoulDesc: "— gains hypothétiques futurs d'identifiants. Le vrai SoulScore ne peut qu'augmenter on-chain.",
     helpSourcesTitle: "Sources de données",
-    helpSourcesBody: "Classement et statistiques : API Galactica Admin. Données de verrou (lockedGNET, lockEnd, veGNET) et offre gUBI : on-chain à l'instantané de bloc. Toutes les données sont actualisées à chaque chargement ou en appuyant sur ↺ Actualiser.",
+    helpSourcesBody: "Classement et statistiques : API Galactica Admin. Données de verrou (lockedGNET, lockEnd, veGNET) et offre gUBI : on-chain à l'instantané de bloc. Stats de burn (total brûlés, txs, wallets brûleurs) et détenteurs gUBI : chargés à la demande depuis les logs d'événements Transfer. Toutes les données sont actualisées à chaque chargement ou en appuyant sur ↺ Actualiser.",
 
     labTitle: "⚗ Lab — Projection gUBI",
     labDisclaimer: "⚗ Expérimental — projection purement mathématique. Pas une prévision. La concurrence du pool est imprévisible.",

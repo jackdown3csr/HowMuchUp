@@ -52,6 +52,7 @@ export function simulate(
     : currentMonthlyReward;
 
   return {
+    hasChanges,
     currentLockedGNET,
     currentVeGNET,
     currentDaysLeft,

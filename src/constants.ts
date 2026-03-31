@@ -16,7 +16,8 @@ export const MONTHLY_EMISSION = 5_000_000;
 export const GUBI_PROTOCOL_ADDRESSES = new Set([
   "0x8a1a077af6dfae27078c907a95b865a203e682bb", // minter
   "0xeb2082d1c208c4f3abe645f7bbd779bf6c2c3ada", // distributor EOA
-  "0x5b416a1d72518372b04aa3ea548f74c355b0371b", // distributor contract
+  "0x5b416a1d72518372b04aa3ea548f74c355b0371b", // distributor contract (implementation)
+  "0x07297e1aa709c85e81c1a9498080ae010be91d80", // distributor proxy (points to implementation above)
   "0x50af2aab1455c1c06b3b8e623549dde437f54eef", // pool vault
 ]);
 

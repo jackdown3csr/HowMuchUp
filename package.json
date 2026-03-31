@@ -20,7 +20,8 @@
     "dev": "vite",
     "build": "node scripts/convert-og.js && tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "holders:gubi": "node scripts/gubiHolders.js"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",

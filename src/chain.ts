@@ -75,6 +75,45 @@ export async function readGubiTotalSupply(): Promise<number> {
 
 const TRANSFER_SIG = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 const ZERO_TOPIC   = "0x" + "0".repeat(64);
+const ZERO_ADDR    = "0x0000000000000000000000000000000000000000";
+
+export interface GubiHolder {
+  address: string;
+  balance: number;
+}
+
+export async function readGubiHolders(): Promise<GubiHolder[]> {
+  const provider = getProvider();
+  const block = await provider.getBlockNumber();
+
+  const CHUNK = 50_000;
+  const balances = new Map<string, bigint>();
+
+  for (let from = 0; from <= block; from += CHUNK) {
+    const to = Math.min(from + CHUNK - 1, block);
+    const logs = await provider.getLogs({
+      address:   CONTRACTS.gubiToken,
+      topics:    [TRANSFER_SIG],
+      fromBlock: from,
+      toBlock:   to,
+    });
+    for (const log of logs) {
+      const sender = ("0x" + log.topics[1]!.slice(26)).toLowerCase();
+      const receiver = ("0x" + log.topics[2]!.slice(26)).toLowerCase();
+      const val = BigInt(log.data);
+      if (sender !== ZERO_ADDR) balances.set(sender, (balances.get(sender) ?? 0n) - val);
+      if (receiver !== ZERO_ADDR) balances.set(receiver, (balances.get(receiver) ?? 0n) + val);
+    }
+  }
+
+  return [...balances.entries()]
+    .filter(([addr, bal]) => bal > 0n && !GUBI_PROTOCOL_ADDRESSES.has(addr))
+    .sort((a, b) => (b[1] > a[1] ? 1 : -1))
+    .map(([address, balance]) => ({
+      address,
+      balance: Number(ethers.formatEther(balance)),
+    }));
+}
 
 export interface GubiBurnStats {
   totalBurned: number;

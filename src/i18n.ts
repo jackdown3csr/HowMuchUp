@@ -199,7 +199,7 @@ interface Translations {
 export const translations: Record<Lang, Translations> = {
   en: {
     promoFlambeurPrefix: "◈ Have gUBI to burn? Use",
-    promoFlambeurSuffix: "instead — get WGNET for your full gUBI balance, including ARCHAI, with a 30% bonus. EPOCH 0 ending today.",
+    promoFlambeurSuffix: "instead — get WGNET for your full gUBI balance, including ARCHAI, with a 25% bonus. EPOCH 0 ending today.",
 
     subtitle: "gUBI rank and reward simulator",
     btnRefresh: "↺ Refresh",
@@ -382,7 +382,7 @@ export const translations: Record<Lang, Translations> = {
 
   fr: {
     promoFlambeurPrefix: "◈ Vous prévoyez de brûler des gUBI ? Utilisez",
-    promoFlambeurSuffix: "— obtenez des WGNET avec 30 % de bonus pour tous vos gUBI, ARCHAI inclus. EPOCH 0 se termine aujourd'hui.",
+    promoFlambeurSuffix: "— obtenez des WGNET avec 25 % de bonus pour tous vos gUBI, ARCHAI inclus. EPOCH 0 se termine aujourd'hui.",
 
     subtitle: "simulateur de rang et récompense gUBI",
     btnRefresh: "↺ Actualiser",

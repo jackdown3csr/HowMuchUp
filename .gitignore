@@ -13,7 +13,7 @@ dist-ssr
 *.local
 
 # Generated at build time
-public/og-image.png
+public/og-image*.png
 
 # Editor directories and files
 .vscode/*

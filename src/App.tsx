@@ -385,7 +385,7 @@ function App() {
         {lang === "fr" ? (
           <>◈ Vous prévoyez de brûler des gUBI ? Utilisez{" "}
           <a href="https://flambeur.xyz" target="_blank" rel="noopener noreferrer" style={{ color: C.accent, textDecoration: "none", fontWeight: "bold" }}>flambeur.xyz ↗</a>
-            {" "}— obtenez des WGNET avec 30 % de bonus pour tous vos gUBI, ARCHAI inclus. EPOCH 0 ending today.</>
+            {" "}— obtenez des WGNET avec 30 % de bonus pour tous vos gUBI, ARCHAI inclus. EPOCH 0 se termine aujourd'hui.</>
         ) : (
           <>◈ Have gUBI to burn? Use{" "}
           <a href="https://flambeur.xyz" target="_blank" rel="noopener noreferrer" style={{ color: C.accent, textDecoration: "none", fontWeight: "bold" }}>flambeur.xyz ↗</a>

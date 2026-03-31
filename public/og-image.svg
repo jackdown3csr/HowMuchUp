@@ -1,9 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <defs>
-    <radialGradient id="bg" cx="34%" cy="42%" r="68%">
-      <stop offset="0%" stop-color="#171717"/>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#161616"/>
+      <stop offset="55%" stop-color="#121212"/>
       <stop offset="100%" stop-color="#101010"/>
-    </radialGradient>
+    </linearGradient>
     <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#3ea2ff"/>
       <stop offset="100%" stop-color="#6ab6ff"/>
@@ -28,9 +29,13 @@
 
   <rect width="1200" height="630" fill="url(#bg)"/>
 
-  <ellipse cx="155" cy="178" rx="130" ry="100" fill="#1a2e46" opacity="0.18"/>
-  <ellipse cx="340" cy="400" rx="300" ry="210" fill="#171d24" opacity="0.55"/>
-  <ellipse cx="920" cy="320" rx="310" ry="250" fill="#171717" opacity="0.85"/>
+  <line x1="0" y1="126" x2="1200" y2="126" stroke="#1f1f1f" stroke-width="1"/>
+  <line x1="0" y1="314" x2="1200" y2="314" stroke="#191919" stroke-width="1"/>
+  <line x1="0" y1="504" x2="1200" y2="504" stroke="#1f1f1f" stroke-width="1"/>
+  <line x1="620" y1="0" x2="620" y2="630" stroke="#1b1b1b" stroke-width="1"/>
+  <line x1="980" y1="0" x2="980" y2="630" stroke="#1b1b1b" stroke-width="1"/>
+  <rect x="48" y="84" width="532" height="470" rx="8" fill="#14171b" opacity="0.34"/>
+  <rect x="654" y="58" width="506" height="520" rx="8" fill="#141414" opacity="0.42"/>
 
   <path d="M107.5 215 L137.5 190 L157.5 205 L210 135"
         fill="none" stroke="#224d79" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" opacity="0.18"/>
@@ -48,7 +53,7 @@
 
   <text x="80" y="320"
         font-family="'Segoe UI', system-ui, -apple-system, sans-serif"
-        font-size="90" font-weight="800" fill="#eef2ff" letter-spacing="-3.5">HowMuchUp</text>
+        font-size="82" font-weight="800" fill="#eef2ff" letter-spacing="-3">HowMuchUp</text>
 
   <text x="83" y="368"
         font-family="'Segoe UI', system-ui, sans-serif"

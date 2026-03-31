@@ -1,26 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <defs>
-    <radialGradient id="bg" cx="35%" cy="44%" r="65%">
-      <stop offset="0%" stop-color="#080f1c"/>
-      <stop offset="100%" stop-color="#05070d"/>
+    <radialGradient id="bg" cx="34%" cy="42%" r="68%">
+      <stop offset="0%" stop-color="#171717"/>
+      <stop offset="100%" stop-color="#101010"/>
     </radialGradient>
     <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#44aaff"/>
-      <stop offset="100%" stop-color="#a855f7"/>
+      <stop offset="0%" stop-color="#3ea2ff"/>
+      <stop offset="100%" stop-color="#6ab6ff"/>
     </linearGradient>
-    <!-- Logo gradient: absolute coords after scale 2.5 + translate(80,100) -->
-    <!-- original M11 46 → (107.5,215); M52 14 → (210,135) -->
     <linearGradient id="logoGrad" x1="108" y1="215" x2="210" y2="135" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#44aaff"/>
-      <stop offset="100%" stop-color="#a855f7"/>
+      <stop offset="0%" stop-color="#2f74b7"/>
+      <stop offset="100%" stop-color="#4db0ff"/>
     </linearGradient>
     <linearGradient id="barGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#44aaff" stop-opacity="0.9"/>
-      <stop offset="100%" stop-color="#7c6fff" stop-opacity="0.7"/>
+      <stop offset="0%" stop-color="#3ea2ff" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#77c0ff" stop-opacity="0.82"/>
     </linearGradient>
     <linearGradient id="divFade" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#44aaff" stop-opacity="0.25"/>
-      <stop offset="100%" stop-color="#44aaff" stop-opacity="0"/>
+      <stop offset="0%" stop-color="#3ea2ff" stop-opacity="0.26"/>
+      <stop offset="100%" stop-color="#3ea2ff" stop-opacity="0"/>
     </linearGradient>
     <filter id="lGlow" x="-40%" y="-40%" width="180%" height="180%">
       <feGaussianBlur stdDeviation="5" result="blur"/>
@@ -28,137 +26,116 @@
     </filter>
   </defs>
 
-  <!-- Background -->
   <rect width="1200" height="630" fill="url(#bg)"/>
 
-  <!-- Ambient glows -->
-  <ellipse cx="155" cy="178" rx="130" ry="100" fill="#2060cc" opacity="0.07"/>
-  <ellipse cx="340" cy="400" rx="300" ry="210" fill="#1840a0" opacity="0.04"/>
-  <ellipse cx="920" cy="320" rx="310" ry="250" fill="#6820cc" opacity="0.04"/>
+  <ellipse cx="155" cy="178" rx="130" ry="100" fill="#1a2e46" opacity="0.18"/>
+  <ellipse cx="340" cy="400" rx="300" ry="210" fill="#171d24" opacity="0.55"/>
+  <ellipse cx="920" cy="320" rx="310" ry="250" fill="#171717" opacity="0.85"/>
 
-  <!-- ══ LOGO — chart path scale×2.5 translate(80,100) ══ -->
-  <!-- M11 46 → (107.5, 215) · L23 36 → (137.5, 190) · L31 42 → (157.5, 205) · L52 14 → (210, 135) -->
-
-  <!-- outer halo -->
   <path d="M107.5 215 L137.5 190 L157.5 205 L210 135"
-        fill="none" stroke="#3388ff" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" opacity="0.06"/>
-  <!-- mid glow -->
+        fill="none" stroke="#224d79" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" opacity="0.18"/>
   <path d="M107.5 215 L137.5 190 L157.5 205 L210 135"
-        fill="none" stroke="#7755ee" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" opacity="0.09"/>
-  <!-- crisp line -->
+        fill="none" stroke="#2d6fa8" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" opacity="0.22"/>
   <path d="M107.5 215 L137.5 190 L157.5 205 L210 135"
         fill="none" stroke="url(#logoGrad)" stroke-width="8"
         stroke-linecap="round" stroke-linejoin="round"
         filter="url(#lGlow)"/>
 
-  <!-- peak dot -->
-  <circle cx="210" cy="135" r="18" fill="#a855f7" opacity="0.12"/>
-  <circle cx="210" cy="135" r="10" fill="#a855f7" opacity="0.18"/>
-  <circle cx="210" cy="135" r="5.5" fill="#c888ff"/>
-  <circle cx="210" cy="135" r="2.5" fill="#eedfff"/>
+  <circle cx="210" cy="135" r="18" fill="#3ea2ff" opacity="0.14"/>
+  <circle cx="210" cy="135" r="10" fill="#3ea2ff" opacity="0.2"/>
+  <circle cx="210" cy="135" r="5.5" fill="#7ec2ff"/>
+  <circle cx="210" cy="135" r="2.5" fill="#eef7ff"/>
 
-  <!-- ══ TEXT ══ -->
   <text x="80" y="320"
         font-family="'Segoe UI', system-ui, -apple-system, sans-serif"
         font-size="90" font-weight="800" fill="#eef2ff" letter-spacing="-3.5">HowMuchUp</text>
 
   <text x="83" y="368"
         font-family="'Segoe UI', system-ui, sans-serif"
-        font-size="24" fill="#4e6888" letter-spacing="0.1">Galactica gUBI rank &amp; reward simulator</text>
+        font-size="24" fill="#8a8a8a" letter-spacing="0.1">Galactica gUBI rank &amp; reward simulator</text>
 
   <line x1="83" y1="395" x2="560" y2="395" stroke="url(#divFade)" stroke-width="1"/>
 
-  <!-- Tags -->
-  <rect x="83" y="413" width="106" height="31" rx="15.5" fill="#091628" stroke="#1e3858" stroke-width="1"/>
+  <rect x="83" y="413" width="106" height="31" rx="15.5" fill="#1a1f26" stroke="#2f445a" stroke-width="1"/>
   <text x="136" y="433" font-family="'Segoe UI', system-ui, sans-serif"
-        font-size="13.5" fill="#44aaff" text-anchor="middle">veGNET</text>
+        font-size="13.5" fill="#3ea2ff" text-anchor="middle">veGNET</text>
 
-  <rect x="203" y="413" width="114" height="31" rx="15.5" fill="#0f0920" stroke="#32185a" stroke-width="1"/>
+  <rect x="203" y="413" width="114" height="31" rx="15.5" fill="#1a1f26" stroke="#2f445a" stroke-width="1"/>
   <text x="260" y="433" font-family="'Segoe UI', system-ui, sans-serif"
-        font-size="13.5" fill="#9060d8" text-anchor="middle">SoulScore</text>
+        font-size="13.5" fill="#9cb8d3" text-anchor="middle">SoulScore</text>
 
-  <rect x="331" y="413" width="80" height="31" rx="15.5" fill="#110828" stroke="#3c1260" stroke-width="1"/>
+  <rect x="331" y="413" width="80" height="31" rx="15.5" fill="#1a1f26" stroke="#2f445a" stroke-width="1"/>
   <text x="371" y="433" font-family="'Segoe UI', system-ui, sans-serif"
-        font-size="13.5" fill="#aa60e8" text-anchor="middle">gUBI</text>
+        font-size="13.5" fill="#dbe8f7" text-anchor="middle">gUBI</text>
 
-  <!-- Domain -->
-  <circle cx="83" cy="512" r="3.5" fill="#44aaff" opacity="0.55"/>
-  <text x="96" y="518" font-family="'Segoe UI', system-ui, sans-serif"
-        font-size="18" fill="#2c4860" letter-spacing="0.3">galactica.network</text>
+  <text x="83" y="518" font-family="'Segoe UI', system-ui, sans-serif"
+        font-size="18" fill="#6c7c8b" letter-spacing="0.3">howmuchup.vercel.app</text>
 
-  <!-- ══ RIGHT PANEL ══ -->
-  <rect x="676" y="76" width="456" height="480" rx="16" fill="#090e1c" stroke="#16243a" stroke-width="1"/>
+  <rect x="676" y="76" width="456" height="480" rx="16" fill="#171717" stroke="#2f2f2f" stroke-width="1.2"/>
 
-  <!-- panel header -->
   <text x="710" y="117" font-family="'Segoe UI', system-ui, sans-serif"
-        font-size="11" fill="#44aaff" letter-spacing="2.5" font-weight="600">LEADERBOARD</text>
+        font-size="11" fill="#3ea2ff" letter-spacing="2.5" font-weight="700">LEADERBOARD</text>
   <text x="856" y="133" font-family="'Segoe UI', system-ui, sans-serif"
-        font-size="10" fill="#1e3048" letter-spacing="0.8">REPUTATION</text>
+        font-size="10" fill="#656565" letter-spacing="0.8">REPUTATION</text>
   <text x="1112" y="133" font-family="'Segoe UI', system-ui, sans-serif"
-        font-size="10" fill="#1e3048" text-anchor="end" letter-spacing="0.8">gUBI / mo</text>
-  <line x1="710" y1="140" x2="1112" y2="140" stroke="#16243a" stroke-width="1"/>
+        font-size="10" fill="#656565" text-anchor="end" letter-spacing="0.8">gUBI / mo</text>
+  <line x1="710" y1="140" x2="1112" y2="140" stroke="#2f2f2f" stroke-width="1"/>
 
-  <!-- ROW 1 gold -->
-  <rect x="692" y="150" width="424" height="56" rx="8" fill="#0b1c30" stroke="#18365a" stroke-width="1"/>
-  <circle cx="720" cy="178" r="15" fill="#1c1800" stroke="#c89000" stroke-width="1.5"/>
+  <rect x="692" y="150" width="424" height="56" rx="8" fill="#1d2126" stroke="#35506b" stroke-width="1"/>
+  <circle cx="720" cy="178" r="15" fill="#1b2530" stroke="#3ea2ff" stroke-width="1.5"/>
   <text x="720" y="183" font-family="'Segoe UI', system-ui, sans-serif"
-        font-size="12" fill="#c89000" text-anchor="middle" font-weight="700">1</text>
-  <text x="746" y="174" font-family="'Courier New', monospace" font-size="13" fill="#78a8c8">0x4f2a...8e1d</text>
-  <text x="746" y="189" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" fill="#1e3855">142,830 rep</text>
-  <rect x="854" y="173" width="136" height="7" rx="3.5" fill="#0b1c30"/>
+        font-size="12" fill="#3ea2ff" text-anchor="middle" font-weight="700">1</text>
+  <text x="746" y="174" font-family="'Courier New', monospace" font-size="13" fill="#9cc0e0">0x4f2a...8e1d</text>
+  <text x="746" y="189" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" fill="#737373">142,830 rep</text>
+  <rect x="854" y="173" width="136" height="7" rx="3.5" fill="#252525"/>
   <rect x="854" y="173" width="136" height="7" rx="3.5" fill="url(#barGrad)"/>
   <text x="1112" y="182" font-family="'Segoe UI', system-ui, sans-serif"
-        font-size="14" fill="#88bce0" text-anchor="end" font-weight="600">4,821.34</text>
+        font-size="14" fill="#e9edf2" text-anchor="end" font-weight="600">4,821.34</text>
 
-  <!-- ROW 2 silver -->
-  <rect x="692" y="217" width="424" height="56" rx="8" fill="#080d18" stroke="#121e2c" stroke-width="1"/>
-  <circle cx="720" cy="245" r="15" fill="#141414" stroke="#808080" stroke-width="1.5"/>
+  <rect x="692" y="217" width="424" height="56" rx="8" fill="#1b1b1b" stroke="#2e2e2e" stroke-width="1"/>
+  <circle cx="720" cy="245" r="15" fill="#1a1a1a" stroke="#4a4a4a" stroke-width="1.5"/>
   <text x="720" y="250" font-family="'Segoe UI', system-ui, sans-serif"
-        font-size="12" fill="#848484" text-anchor="middle" font-weight="700">2</text>
-  <text x="746" y="241" font-family="'Courier New', monospace" font-size="13" fill="#5888a8">0xa311...0c7b</text>
-  <text x="746" y="256" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" fill="#1e3040">98,421 rep</text>
-  <rect x="854" y="240" width="136" height="7" rx="3.5" fill="#0a1220"/>
-  <rect x="854" y="240" width="93" height="7" rx="3.5" fill="#44aaff" opacity="0.5"/>
+        font-size="12" fill="#8d8d8d" text-anchor="middle" font-weight="700">2</text>
+  <text x="746" y="241" font-family="'Courier New', monospace" font-size="13" fill="#86a1b8">0xa311...0c7b</text>
+  <text x="746" y="256" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" fill="#737373">98,421 rep</text>
+  <rect x="854" y="240" width="136" height="7" rx="3.5" fill="#252525"/>
+  <rect x="854" y="240" width="93" height="7" rx="3.5" fill="#3ea2ff" opacity="0.58"/>
   <text x="1112" y="249" font-family="'Segoe UI', system-ui, sans-serif"
-        font-size="14" fill="#6090b0" text-anchor="end" font-weight="600">3,104.87</text>
+        font-size="14" fill="#d6dde5" text-anchor="end" font-weight="600">3,104.87</text>
 
-  <!-- ROW 3 bronze -->
-  <rect x="692" y="284" width="424" height="56" rx="8" fill="#080d18" stroke="#121e2c" stroke-width="1"/>
-  <circle cx="720" cy="312" r="15" fill="#181000" stroke="#9a5810" stroke-width="1.5"/>
+  <rect x="692" y="284" width="424" height="56" rx="8" fill="#1b1b1b" stroke="#2e2e2e" stroke-width="1"/>
+  <circle cx="720" cy="312" r="15" fill="#1a1a1a" stroke="#4a4a4a" stroke-width="1.5"/>
   <text x="720" y="317" font-family="'Segoe UI', system-ui, sans-serif"
-        font-size="12" fill="#a86818" text-anchor="middle" font-weight="700">3</text>
-  <text x="746" y="308" font-family="'Courier New', monospace" font-size="13" fill="#406888">0x7e8c...f249</text>
-  <text x="746" y="323" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" fill="#1e3040">67,209 rep</text>
-  <rect x="854" y="307" width="136" height="7" rx="3.5" fill="#0a1220"/>
-  <rect x="854" y="307" width="64" height="7" rx="3.5" fill="#8855dd" opacity="0.55"/>
+        font-size="12" fill="#8d8d8d" text-anchor="middle" font-weight="700">3</text>
+  <text x="746" y="308" font-family="'Courier New', monospace" font-size="13" fill="#748ea6">0x7e8c...f249</text>
+  <text x="746" y="323" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" fill="#737373">67,209 rep</text>
+  <rect x="854" y="307" width="136" height="7" rx="3.5" fill="#252525"/>
+  <rect x="854" y="307" width="64" height="7" rx="3.5" fill="#3ea2ff" opacity="0.45"/>
   <text x="1112" y="316" font-family="'Segoe UI', system-ui, sans-serif"
-        font-size="14" fill="#507090" text-anchor="end" font-weight="600">2,390.12</text>
+        font-size="14" fill="#c7d0da" text-anchor="end" font-weight="600">2,390.12</text>
 
-  <!-- ROW 4 -->
-  <rect x="692" y="351" width="424" height="56" rx="8" fill="#080d18" stroke="#121e2c" stroke-width="1"/>
-  <circle cx="720" cy="379" r="15" fill="#0e1218" stroke="#283848" stroke-width="1.5"/>
+  <rect x="692" y="351" width="424" height="56" rx="8" fill="#1b1b1b" stroke="#2e2e2e" stroke-width="1"/>
+  <circle cx="720" cy="379" r="15" fill="#1a1a1a" stroke="#4a4a4a" stroke-width="1.5"/>
   <text x="720" y="384" font-family="'Segoe UI', system-ui, sans-serif"
-        font-size="12" fill="#485868" text-anchor="middle" font-weight="700">4</text>
-  <text x="746" y="375" font-family="'Courier New', monospace" font-size="13" fill="#305870">0x1d50...3a8f</text>
-  <text x="746" y="390" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" fill="#1e3040">45,102 rep</text>
-  <rect x="854" y="374" width="136" height="7" rx="3.5" fill="#0a1220"/>
-  <rect x="854" y="374" width="43" height="7" rx="3.5" fill="#44aaff" opacity="0.32"/>
+        font-size="12" fill="#8d8d8d" text-anchor="middle" font-weight="700">4</text>
+  <text x="746" y="375" font-family="'Courier New', monospace" font-size="13" fill="#677e92">0x1d50...3a8f</text>
+  <text x="746" y="390" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" fill="#737373">45,102 rep</text>
+  <rect x="854" y="374" width="136" height="7" rx="3.5" fill="#252525"/>
+  <rect x="854" y="374" width="43" height="7" rx="3.5" fill="#3ea2ff" opacity="0.34"/>
   <text x="1112" y="383" font-family="'Segoe UI', system-ui, sans-serif"
-        font-size="14" fill="#406080" text-anchor="end" font-weight="600">1,655.09</text>
+        font-size="14" fill="#bcc7d1" text-anchor="end" font-weight="600">1,655.09</text>
 
-  <!-- ROW 5 -->
-  <rect x="692" y="418" width="424" height="56" rx="8" fill="#080d18" stroke="#121e2c" stroke-width="1"/>
-  <circle cx="720" cy="446" r="15" fill="#0e1218" stroke="#283848" stroke-width="1.5"/>
+  <rect x="692" y="418" width="424" height="56" rx="8" fill="#1b1b1b" stroke="#2e2e2e" stroke-width="1"/>
+  <circle cx="720" cy="446" r="15" fill="#1a1a1a" stroke="#4a4a4a" stroke-width="1.5"/>
   <text x="720" y="451" font-family="'Segoe UI', system-ui, sans-serif"
-        font-size="12" fill="#485868" text-anchor="middle" font-weight="700">5</text>
-  <text x="746" y="442" font-family="'Courier New', monospace" font-size="13" fill="#284a60">0x9b72...61e0</text>
-  <text x="746" y="457" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" fill="#1e3040">31,887 rep</text>
-  <rect x="854" y="441" width="136" height="7" rx="3.5" fill="#0a1220"/>
-  <rect x="854" y="441" width="30" height="7" rx="3.5" fill="#44aaff" opacity="0.22"/>
+        font-size="12" fill="#8d8d8d" text-anchor="middle" font-weight="700">5</text>
+  <text x="746" y="442" font-family="'Courier New', monospace" font-size="13" fill="#5e7488">0x9b72...61e0</text>
+  <text x="746" y="457" font-family="'Segoe UI', system-ui, sans-serif" font-size="11" fill="#737373">31,887 rep</text>
+  <rect x="854" y="441" width="136" height="7" rx="3.5" fill="#252525"/>
+  <rect x="854" y="441" width="30" height="7" rx="3.5" fill="#3ea2ff" opacity="0.26"/>
   <text x="1112" y="450" font-family="'Segoe UI', system-ui, sans-serif"
-        font-size="14" fill="#304e68" text-anchor="end" font-weight="600">980.45</text>
+        font-size="14" fill="#b2bec9" text-anchor="end" font-weight="600">980.45</text>
 
-  <!-- panel caption -->
   <text x="904" y="530" font-family="'Segoe UI', system-ui, sans-serif"
-        font-size="11" fill="#162030" text-anchor="middle" letter-spacing="1">REPUTATION · MONTHLY gUBI</text>
+        font-size="11" fill="#666" text-anchor="middle" letter-spacing="1">REPUTATION · MONTHLY gUBI</text>
 </svg>

@@ -2,8 +2,7 @@ export type Lang = "en" | "fr";
 
 interface Translations {
   // Promo banner
-  promoFlambeurPrefix: string;
-  promoFlambeurSuffix: string;
+  promoFlambeurMessages: Array<{ prefix: string; suffix: string; link: { href: string; label: string } }>;
 
   // Header
   subtitle: string;
@@ -198,8 +197,12 @@ interface Translations {
 
 export const translations: Record<Lang, Translations> = {
   en: {
-    promoFlambeurPrefix: "◈ Have gUBI to burn? Use",
-    promoFlambeurSuffix: "instead — get WGNET for your full gUBI balance, including ARCHAI, with a 25% bonus.",
+    promoFlambeurMessages: [
+      { prefix: "◈ Have gUBI to burn? Use", suffix: "instead — get WGNET for your full gUBI balance, including ARCHAI, with a 25% bonus.", link: { href: "https://flambeur.xyz", label: "flambeur.xyz ↗" } },
+      { prefix: "◈ ARCHAI holders: swap your ARCHAI for WGNET at", suffix: "and get rid of that dust.", link: { href: "https://archaisalvage.flambeur.xyz/", label: "archaisalvage.flambeur.xyz ↗" } },
+      { prefix: "◈ Your gUBI is worth more than you think. Swap it for WGNET at", suffix: "with a 25% top-up on your full balance.", link: { href: "https://flambeur.xyz", label: "flambeur.xyz ↗" } },
+         { prefix: "◈ Watch the Galactica blockchain visualized live at", suffix: "", link: { href: "https://vescrow.vercel.app", label: "vescrow.vercel.app ↗" } },
+    ],
 
     subtitle: "gUBI rank and reward simulator",
     btnRefresh: "↺ Refresh",
@@ -381,8 +384,12 @@ export const translations: Record<Lang, Translations> = {
   },
 
   fr: {
-    promoFlambeurPrefix: "◈ Vous prévoyez de brûler des gUBI ? Utilisez",
-    promoFlambeurSuffix: "— obtenez des WGNET avec 25 % de bonus pour tous vos gUBI, ARCHAI inclus.",
+    promoFlambeurMessages: [
+      { prefix: "◈ Vous prévoyez de brûler des gUBI ? Utilisez", suffix: "— obtenez des WGNET avec 25 % de bonus pour tous vos gUBI, ARCHAI inclusivement.", link: { href: "https://flambeur.xyz", label: "flambeur.xyz ↗" } },
+      { prefix: "◈ Détenteurs d'ARCHAI : échangez vos ARCHAI contre des WGNET sur", suffix: "et débarrassez-vous de cette poussière.", link: { href: "https://archaisalvage.flambeur.xyz/", label: "archaisalvage.flambeur.xyz ↗" } },
+      { prefix: "◈ Vos gUBI valent plus que vous ne pensez. Échangez-les contre des WGNET sur", suffix: "avec un bonus de 25 % sur votre solde complet.", link: { href: "https://flambeur.xyz", label: "flambeur.xyz ↗" } },
+      { prefix: "◈ Visualisez la blockchain Galactica en direct sur", suffix: "", link: { href: "https://vescrow.vercel.app", label: "vescrow.vercel.app ↗" } },
+    ],
 
     subtitle: "simulateur de rang et récompense gUBI",
     btnRefresh: "↺ Actualiser",

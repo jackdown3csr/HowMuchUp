@@ -139,6 +139,21 @@ function App() {
   langRef.current = lang;
   const T = translations[lang];
 
+  const [promoIndex, setPromoIndex] = useState(0);
+  const [promoVisible, setPromoVisible] = useState(true);
+  useEffect(() => {
+    const total = T.promoFlambeurMessages.length;
+    if (total <= 1) return;
+    const timer = setInterval(() => {
+      setPromoVisible(false);
+      setTimeout(() => {
+        setPromoIndex((i) => (i + 1) % total);
+        setPromoVisible(true);
+      }, 400);
+    }, 20000);
+    return () => clearInterval(timer);
+  }, [T.promoFlambeurMessages.length]);
+
   // --- Load all data ---
   const loadData = useCallback(async () => {
     try {
@@ -382,9 +397,11 @@ function App() {
 
       {/* Flambeur promo banner */}
       <div style={{ fontFamily: "monospace", fontSize: 12, color: C.textDim, background: C.bg, borderBottom: `1px solid ${C.border}`, padding: "6px 12px", marginBottom: 10, letterSpacing: "0.02em" }}>
-        {T.promoFlambeurPrefix}{" "}
-        <a href="https://flambeur.xyz" target="_blank" rel="noopener noreferrer" style={{ color: C.accent, textDecoration: "none", fontWeight: "bold" }}>flambeur.xyz ↗</a>
-        {" "}{T.promoFlambeurSuffix}
+        <span style={{ transition: "opacity 0.4s", opacity: promoVisible ? 1 : 0, display: "inline" }}>
+          {T.promoFlambeurMessages[promoIndex].prefix}{" "}
+          <a href={T.promoFlambeurMessages[promoIndex].link.href} target="_blank" rel="noopener noreferrer" style={{ color: C.accent, textDecoration: "none", fontWeight: "bold" }}>{T.promoFlambeurMessages[promoIndex].link.label}</a>
+          {T.promoFlambeurMessages[promoIndex].suffix ? " " + T.promoFlambeurMessages[promoIndex].suffix : ""}
+        </span>
       </div>
 
       {/* Header */}

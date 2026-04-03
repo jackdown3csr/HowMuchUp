@@ -34,6 +34,7 @@ interface Translations {
   statTotalRep: string;
   statEmission: string;
   statDailyDistribution: string;
+  statEmissionPerRep: string;
   statPool: string;
   statGubiPrice: string;
   statGubiSupply: string;
@@ -44,6 +45,9 @@ interface Translations {
   statTotalBurned: string;
   statBurnEvents: string;
   statBurners: string;
+  statYourShare: string;
+  statTotalEarned: string;
+  statClaimed: string;
 
   // Simulator
   simTitle: string;
@@ -231,6 +235,7 @@ export const translations: Record<Lang, Translations> = {
     statTotalRep: "total rep",
     statEmission: "emission",
     statDailyDistribution: "daily dist.",
+    statEmissionPerRep: "gUBI/rep",
     statPool: "pool",
     statGubiPrice: "gUBI price",
     statGubiSupply: "gUBI supply",
@@ -241,6 +246,9 @@ export const translations: Record<Lang, Translations> = {
     statTotalBurned: "total burned",
     statBurnEvents: "burn txs",
     statBurners: "burner wallets",
+    statYourShare: "your share",
+    statTotalEarned: "total earned",
+    statClaimed: "claimed",
 
     simTitle: "Simulator",
     addrNotFound: "Address not found in leaderboard.",
@@ -418,6 +426,7 @@ export const translations: Record<Lang, Translations> = {
     statTotalRep: "rép. totale",
     statEmission: "émission",
     statDailyDistribution: "dist. quotidienne",
+    statEmissionPerRep: "gUBI/rép",
     statPool: "pool",
     statGubiPrice: "prix gUBI",
     statGubiSupply: "offre gUBI",
@@ -428,6 +437,9 @@ export const translations: Record<Lang, Translations> = {
     statTotalBurned: "total brûlés",
     statBurnEvents: "txs de burn",
     statBurners: "wallets brûleurs",
+    statYourShare: "votre part",
+    statTotalEarned: "total gagné",
+    statClaimed: "réclamé",
 
     simTitle: "Simulateur",
     addrNotFound: "Adresse introuvable dans le classement.",

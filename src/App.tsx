@@ -477,6 +477,7 @@ function App() {
               <span>{label(T.statTotalRep)} <b style={{ color: C.textBright }}>{formatNumber(stats.totalReputation, 0)}</b></span>
               <span>{label(T.statEmission)} <b style={{ color: C.textBright }}>{formatNumber(Number(stats.totalMonthlyEmission), 0)}</b> {T.gubiPerMonth}</span>
               <span>{label(T.statDailyDistribution)} <b style={{ color: C.textBright }}>{formatNumber(Number(stats.dailyDistribution), 0)}</b> gUBI/day</span>
+              <span>{label(T.statEmissionPerRep)} <b style={{ color: C.textBright }}>{formatNumber(stats.emissionPerRepPoint, 4)}</b></span>
 
               {/* — Pool / token — */}
               <span style={{ flex: "0 0 100%", borderTop: `1px solid ${C.border}`, margin: "4px 0 0" }} />
@@ -492,6 +493,14 @@ function App() {
                 <span>{label(T.statBurnEvents)} <b style={{ color: C.textBright }}>{burnStats.burnEvents}</b></span>
                 <span>{label(T.statBurners)} <b style={{ color: C.textBright }}>{burnStats.uniqueBurners}</b></span>
               </> : <span style={{ color: C.textDim, fontSize: 11 }}>loading…</span>}
+
+              {/* — Your wallet — */}
+              {walletUser && <>
+                <span style={{ flex: "0 0 100%", borderTop: `1px solid ${C.border}`, margin: "4px 0 0" }} />
+                <span>{label(T.statYourShare)} <b style={{ color: C.accent }}>{formatNumber(walletUser.share * 100, 2)}%</b></span>
+                <span>{label(T.statTotalEarned)} <b style={{ color: C.accent }}>{formatNumber(walletUser.totalEarnings, 0)}</b></span>
+                <span>{label(T.statClaimed)} <b style={{ color: C.accent }}>{formatNumber(walletUser.alreadyClaimed, 0)}</b></span>
+              </>}
 
               {/* — Snapshot — */}
               {(snapshotBlock > 0 || snapshotTs > 0) && (

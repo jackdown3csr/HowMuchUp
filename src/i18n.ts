@@ -39,6 +39,9 @@ interface Translations {
   statGubiPrice: string;
   statGubiSupply: string;
   statBacking: string;
+  statChainSnapshot: string;
+  statPoolSource: string;
+  statLiveApi: string;
   statBlock: string;
   statSnapshot: string;
   gubiPerMonth: string;
@@ -240,6 +243,9 @@ export const translations: Record<Lang, Translations> = {
     statGubiPrice: "gUBI price",
     statGubiSupply: "gUBI supply",
     statBacking: "backing/gUBI",
+    statChainSnapshot: "chain snapshot",
+    statPoolSource: "pool source",
+    statLiveApi: "live API",
     statBlock: "block",
     statSnapshot: "snapshot",
     gubiPerMonth: "gUBI/mo",
@@ -431,6 +437,9 @@ export const translations: Record<Lang, Translations> = {
     statGubiPrice: "prix gUBI",
     statGubiSupply: "offre gUBI",
     statBacking: "couverture/gUBI",
+    statChainSnapshot: "instantané chaîne",
+    statPoolSource: "source pool",
+    statLiveApi: "API live",
     statBlock: "bloc",
     statSnapshot: "instantané",
     gubiPerMonth: "gUBI/mois",

@@ -506,9 +506,27 @@ function App() {
               {(snapshotBlock > 0 || snapshotTs > 0) && (
                 <span style={{ flex: "0 0 100%", borderTop: `1px solid ${C.border}`, margin: "4px 0 0" }} />
               )}
-              {snapshotBlock > 0 && <span>{label(T.statBlock)} <b style={{ color: C.textBright }}>{snapshotBlock}</b></span>}
-              {snapshotTs > 0 && <span className="snapshot-full">{label(T.statSnapshot)} {new Date(snapshotTs * 1000).toISOString().slice(0, 16).replace("T", " ")} UTC</span>}
-              {snapshotTs > 0 && <span className="snapshot-short">{label(T.statSnapshot)} {new Date(snapshotTs * 1000).toISOString().slice(11, 16)} UTC</span>}
+              {(snapshotBlock > 0 || snapshotTs > 0) && (
+                <span className="snapshot-full">
+                  {label(T.statChainSnapshot)}
+                  <span style={{ color: C.textBright }}>
+                    {snapshotBlock > 0 ? `${T.statBlock} ${snapshotBlock}` : ""}
+                    {snapshotBlock > 0 && snapshotTs > 0 ? " · " : ""}
+                    {snapshotTs > 0 ? `${new Date(snapshotTs * 1000).toISOString().slice(0, 16).replace("T", " ")} UTC` : ""}
+                  </span>
+                </span>
+              )}
+              {(snapshotBlock > 0 || snapshotTs > 0) && (
+                <span className="snapshot-short">
+                  {label(T.statChainSnapshot)}
+                  <span style={{ color: C.textBright }}>
+                    {snapshotBlock > 0 ? `${T.statBlock} ${snapshotBlock}` : ""}
+                    {snapshotBlock > 0 && snapshotTs > 0 ? " · " : ""}
+                    {snapshotTs > 0 ? `${new Date(snapshotTs * 1000).toISOString().slice(11, 16)} UTC` : ""}
+                  </span>
+                </span>
+              )}
+              <span>{label(T.statPoolSource)} <b style={{ color: C.textDim }}>{T.statLiveApi}</b></span>
             </div>
           )}
         </div>

@@ -200,6 +200,39 @@ interface Translations {
   tipSpread: string;
   tipFillWallet: string;
   tipStartFresh: string;
+
+  // Tax export
+  taxTitle: string;
+  taxSectionSettings: string;
+  taxWalletLabel: string;
+  taxWalletNotConnected: string;
+  taxYearLabel: string;
+  taxBtnGenerate: string;
+  taxBtnCancel: string;
+  taxBtnDownload: (n: number) => string;
+  taxTimingHint: string;
+  taxSectionProgress: string;
+  taxSectionLegend: string;
+  taxLegendNativeGnet: string;
+  taxLegendNativeGnetNote: string;
+  taxLegendGubiIn: string;
+  taxLegendGubiInNote: string;
+  taxLegendGubiOut: string;
+  taxLegendGubiOutNote: string;
+  taxLegendWgnet: string;
+  taxLegendWgnetNote: string;
+  taxLegendVeLock: string;
+  taxLegendVeLockNote: string;
+  taxLegendVeUnlock: string;
+  taxLegendVeUnlockNote: string;
+  taxLegendStakeStake: string;
+  taxLegendStakeStakeNote: string;
+  taxLegendStakeReward: string;
+  taxLegendStakeRewardNote: string;
+  taxLegendVesting: string;
+  taxLegendVestingNote: string;
+  taxLegendFees: string;
+  taxLegendFeesNote: string;
 }
 
 export const translations: Record<Lang, Translations> = {
@@ -395,7 +428,41 @@ export const translations: Record<Lang, Translations> = {
     tipSpread: "Symmetric uncertainty range. Pessimistic = pool grows faster (neutral + spread). Optimistic = pool grows slower (neutral − spread).",
     tipFillWallet: "Pre-fill starting position from your connected wallet or selected leaderboard address",
     tipStartFresh: "Reset starting position to zero (new wallet with no existing lock)",
+
+    // Tax export
+    taxTitle: "Koinly Tax Export",
+    taxSectionSettings: "Export settings",
+    taxWalletLabel: "Wallet",
+    taxWalletNotConnected: "Connect a wallet in the main view first.",
+    taxYearLabel: "Year",
+    taxBtnGenerate: "Generate CSV",
+    taxBtnCancel: "Cancel",
+    taxBtnDownload: (n) => `↓ Download (${n} rows)`,
+    taxTimingHint: "may take up to 2 min",
+    taxSectionProgress: "Progress",
+    taxSectionLegend: "What's included",
+    taxLegendNativeGnet: "Native GNET send/receive",
+    taxLegendNativeGnetNote: "via Explorer API",
+    taxLegendGubiIn: "gUBI received from distributor",
+    taxLegendGubiInNote: "monthly rewards",
+    taxLegendGubiOut: "gUBI sent / burned",
+    taxLegendGubiOutNote: "plain withdrawal; adjust worth/label per jurisdiction for burn",
+    taxLegendWgnet: "wGNET transfers",
+    taxLegendWgnetNote: "wrap/unwrap included",
+    taxLegendVeLock: "veGNET lock (Deposit)",
+    taxLegendVeLockNote: "Add to Pool in Koinly UI",
+    taxLegendVeUnlock: "veGNET unlock (Withdraw)",
+    taxLegendVeUnlockNote: "Remove from Pool in Koinly UI",
+    taxLegendStakeStake: "Legacy staking: stake / unstake",
+    taxLegendStakeStakeNote: "CreateStake / RemoveStake events",
+    taxLegendStakeReward: "Legacy staking: reward paid",
+    taxLegendStakeRewardNote: "RewardPaid / ExtraRewardProvided events",
+    taxLegendVesting: "GNET vesting claim",
+    taxLegendVestingNote: "RewardDistributor ClaimReward events",
+    taxLegendFees: "Gas fees",
+    taxLegendFeesNote: "attached to outgoing txns",
   },
+
 
   fr: {
     promoFlambeurMessages: [
@@ -589,6 +656,36 @@ export const translations: Record<Lang, Translations> = {
     tipSpread: "Écart symétrique d’incertitude. Pessimiste = croissance plus rapide (neutre + écart). Optimiste = plus lente (neutre − écart).",
     tipFillWallet: "Pré-remplir la position de départ depuis votre portefeuille connecté ou l’adresse sélectionnée",
     tipStartFresh: "Réinitialiser la position de départ à zéro (nouveau portefeuille sans verrou existant)",
-
-  },
+    // Tax export
+    taxTitle: "Export fiscal Koinly",
+    taxSectionSettings: "Paramètres d'export",
+    taxWalletLabel: "Portefeuille",
+    taxWalletNotConnected: "Connectez un portefeuille dans la vue principale d'abord.",
+    taxYearLabel: "Année",
+    taxBtnGenerate: "Générer le CSV",
+    taxBtnCancel: "Annuler",
+    taxBtnDownload: (n) => `↓ Télécharger (${n} lignes)`,
+    taxTimingHint: "peut prendre jusqu'à 2 min",
+    taxSectionProgress: "Progression",
+    taxSectionLegend: "Ce qui est inclus",
+    taxLegendNativeGnet: "GNET natif envoyé/reçu",
+    taxLegendNativeGnetNote: "via l'API Explorer",
+    taxLegendGubiIn: "gUBI reçu du distributeur",
+    taxLegendGubiInNote: "récompenses mensuelles",
+    taxLegendGubiOut: "gUBI envoyé / brûlé",
+    taxLegendGubiOutNote: "retrait simple ; ajustez valeur/label selon la juridiction pour le burn",
+    taxLegendWgnet: "Transferts wGNET",
+    taxLegendWgnetNote: "wrap/unwrap inclus",
+    taxLegendVeLock: "veGNET verrouillé (Deposit)",
+    taxLegendVeLockNote: "Ajouter au pool dans l'interface Koinly",
+    taxLegendVeUnlock: "veGNET déverrouillé (Withdraw)",
+    taxLegendVeUnlockNote: "Retirer du pool dans l'interface Koinly",
+    taxLegendStakeStake: "Staking legacy : stake / unstake",
+    taxLegendStakeStakeNote: "Événements CreateStake / RemoveStake",
+    taxLegendStakeReward: "Staking legacy : récompense",
+    taxLegendStakeRewardNote: "Événements RewardPaid / ExtraRewardProvided",
+    taxLegendVesting: "Vesting GNET",
+    taxLegendVestingNote: "Événements RewardDistributor ClaimReward",
+    taxLegendFees: "Frais de gaz",
+    taxLegendFeesNote: "attachés aux transactions sortantes",  },
 };

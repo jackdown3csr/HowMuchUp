@@ -10,6 +10,7 @@ import { isMetaMaskInstalled, connectMetaMask } from "./wallet";
 import { translations } from "./i18n";
 import type { Lang } from "./i18n";
 import Lab from "./Lab.tsx";
+import TaxExport from "./TaxExport.tsx";
 
 const NEW_WALLET = "__new__";
 
@@ -129,7 +130,7 @@ function App() {
   const [showStats, setShowStats] = useState(true);
   const [showAllUsers, setShowAllUsers] = useState(false);
   const [showAllCols, setShowAllCols] = useState(false);
-  const [view, setView] = useState<"main" | "lab">("main");
+  const [view, setView] = useState<"main" | "lab" | "tax">("main");
   const [lang, setLang] = useState<Lang>(() => {
     const saved = localStorage.getItem("lang") as Lang | null;
     if (saved === "en" || saved === "fr") return saved;
@@ -432,6 +433,9 @@ function App() {
           <button style={{ ...btnStyle, fontSize: 12, padding: "3px 10px", borderColor: view === "lab" ? C.accent : C.borderAccent, color: view === "lab" ? C.accent : C.textDim }} onClick={() => setView(v => v === "lab" ? "main" : "lab")} title="⚗ Lab — gUBI projection">
             {view === "lab" ? T.labBtnBack : T.labBtnOpen}
           </button>
+          <button style={{ ...btnStyle, fontSize: 12, padding: "3px 10px", borderColor: view === "tax" ? C.accent : C.borderAccent, color: view === "tax" ? C.accent : C.textDim }} onClick={() => setView(v => v === "tax" ? "main" : "tax")} title="Tax export — Koinly CSV">
+            {view === "tax" ? "← Back" : "Tax CSV"}
+          </button>
           <button style={{ ...btnStyle, fontSize: 12, padding: "3px 10px", borderColor: C.borderAccent, color: C.textDim }} onClick={() => setLang(l => { const n = l === "en" ? "fr" : "en"; localStorage.setItem("lang", n); return n; })} title="Switch language / Changer de langue">
             {lang === "en" ? "FR" : "EN"}
           </button>
@@ -536,8 +540,10 @@ function App() {
       {!loading && users.length > 0 && view === "lab" && (
         <Lab lang={lang} walletUser={walletUser} selectedUser={selectedUser} initialPoolTotalRep={initialPoolTotalRep} users={users} snapshotTs={snapshotTs} onBack={() => setView("main")} />
       )}
-      {!loading && users.length > 0 && view === "main" && (
-        <div className="main-layout">
+      {view === "tax" && (
+        <TaxExport walletAddr={walletAddr} lang={lang} onBack={() => setView("main")} />
+      )}
+      {!loading && users.length > 0 && view === "main" && (        <div className="main-layout">
         <div className="sim-col">
         <div className="sim-card" style={card}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>

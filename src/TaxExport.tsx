@@ -125,7 +125,16 @@ function downloadCsv(content: string, filename: string) {
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;
+  // iOS Safari ignores the download attribute for blob URLs — open in new tab
+  // so the user can long-press → Save. On all other browsers this triggers
+  // a normal file download.
+  if (/iP(hone|ad|od)/i.test(navigator.userAgent)) {
+    a.target = "_blank";
+    a.rel = "noopener";
+  }
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
 

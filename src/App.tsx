@@ -814,9 +814,18 @@ function App() {
                 <div style={{ color: C.accent, fontWeight: "bold", marginBottom: 4 }}>{T.holdersTitle}</div>
                 <div style={{ color: C.textDim, fontSize: 12 }}>{T.holdersDesc}</div>
               </div>
-              <button style={{ ...btnStyle, padding: "3px 10px", fontSize: 12 }} onClick={() => setShowHolders(false)}>
-                {T.btnClose}
-              </button>
+              <div style={{ display: "flex", gap: 6 }}>
+                <button style={{ ...btnStyle, padding: "3px 10px", fontSize: 12 }} disabled={holdersLoading} onClick={() => {
+                  setHolders(null);
+                  setHoldersLoading(true);
+                  readGubiHolders().then(h => { setHolders(h); setHoldersLoading(false); }).catch(() => setHoldersLoading(false));
+                }}>
+                  {holdersLoading ? "…" : T.btnRefresh}
+                </button>
+                <button style={{ ...btnStyle, padding: "3px 10px", fontSize: 12 }} onClick={() => setShowHolders(false)}>
+                  {T.btnClose}
+                </button>
+              </div>
             </div>
             <div className="modal-table-wrap">
               {holdersLoading && <div style={{ color: C.textDim, fontSize: 12, padding: "12px 0" }}>⏳ loading…</div>}
